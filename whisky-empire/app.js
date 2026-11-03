@@ -1,6 +1,6 @@
 import {icon} from './components/icons.js';
-import {pools,value,quickValue,voucher,achievements,validateCatalog,WASH_RULES} from './game/engine.js';
-import {transact} from './game/storage.js';
+import {pools,value,quickValue,voucher,achievements,validateCatalog,WASH_RULES} from './game/engine.js?v=arcade-2';
+import {transact} from './game/storage.js?v=arcade-2';
 const bottles=validateCatalog(await fetch('data/catalog.json').then(r=>r.json()));
 const catalog=[...bottles,voucher];
 const money=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(n/100);

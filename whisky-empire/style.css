@@ -5,3 +5,33 @@
 @media(max-width:380px){.game-shell{padding:0 12px}.player-hud{gap:6px}.level-badge{display:none}.wallet strong{font-size:17px}.hero-pills{display:none}.hero-copy h1{font-size:48px}.quest-copy{min-width:170px}.quest-copy h3{font-size:14px}.game-status{gap:9px;font-size:6px}.mode-info h2{font-size:16px}.brand strong{font-size:20px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .locked-bottles .bottle{clip-path:polygon(37% 0,63% 0,63% 23%,78% 37%,82% 95%,76% 100%,24% 100%,18% 95%,22% 37%,37% 23%)}
+/* Product photography is composited with display-only alpha masks, never redrawn. */
+.bottle img[data-bottle]{opacity:0;transition:opacity .2s;filter:drop-shadow(0 9px 8px #09051166)}
+.bottle img.cutout-ready{opacity:1}
+.world-bottle .bottle,.world-bottle:nth-child(3) .bottle,.world-bottle:nth-child(5) .bottle,.mode-market .bottle,.starter-quest>.bottle,.ticket-art .bottle,.product>.bottle,.scratch-stage>.bottle,dialog .bottle{background:transparent;border:0;padding:0;border-radius:0;box-shadow:none}
+.world-bottle .bottle{transform:rotate(-2deg)}
+.world-bottle:nth-child(2n) .bottle{transform:rotate(2deg)}
+.mode-market .mode-art .bottle{width:135px;transform:rotate(-6deg);height:145px}
+.mode-market .price-sticker{left:57%;bottom:18px;z-index:2}
+.starter-quest>.bottle{width:64px;transform:rotate(5deg)}
+.product>.bottle{width:100%;position:relative}
+.product>.bottle:before{content:'';position:absolute;bottom:-2px;width:70%;height:16px;background:#09051166;filter:blur(9px);border-radius:50%}
+.product>.bottle img{position:relative;z-index:1}
+.ticket-art .bottle{width:120px;transform:rotate(-5deg)}
+.brand-symbol{width:48px;height:65px;background:none;box-shadow:none;transform:none;border-radius:0;font-size:0;line-height:0}
+.brand-symbol>svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 4px 7px #f09b5820)}
+.brand{gap:11px}
+.brand strong{font-size:27px;letter-spacing:-.6px}
+.scratch-promo-art{width:82%;height:160px;object-fit:contain;transform:rotate(-5deg) scale(1.16);filter:drop-shadow(0 9px 6px #1c0e2e77);position:relative;z-index:1}
+.mode-scratch .mode-art{background:radial-gradient(ellipse at 45% 50%,#a969d744,transparent 70%),#493257;overflow:hidden}
+@media(max-width:760px){
+ .brand-symbol{width:34px;height:48px}.brand{gap:8px}.brand strong{font-size:21px}
+ .world-bottle .bottle,.world-bottle:nth-child(3) .bottle{border:0;background:none}
+ .mode-market .mode-art .bottle{width:110px;height:122px}
+ .mode-market .price-sticker{left:57%;bottom:13px}
+ .starter-quest>.bottle{width:48px}
+ .product>.bottle{border:0;width:100%}
+ .scratch-promo-art{width:100%;height:132px;transform:rotate(-5deg) scale(1.09)}
+}
+.scratch-promo-art{height:140px;transform:rotate(-3deg);width:90%}
+@media(max-width:760px){.scratch-promo-art{height:116px;width:96%;transform:rotate(-3deg)}}

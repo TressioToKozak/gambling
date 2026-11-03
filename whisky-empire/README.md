@@ -107,3 +107,9 @@ Interfejs całkowicie przebudowano: górny HUD i menu, scena baru z fotografiami
 Mycie: minimum 2,5 s aktywnego ruchu, 95% pokrycia i 600 px ruchu; większa gąbka i szybsze usuwanie plam. Test Chromium ukończył jeden kieliszek w 2,85 s i potwierdził wypłatę 1 €. Samo kliknięcie nadal nie daje wynagrodzenia.
 
 Misja startowa: po pierwszym umytym kieliszku można raz odebrać Red Label (`jw-004`) za darmo. Działa także z dotychczasowym zapisem, bez resetowania konta. To jawny jednorazowy prezent, oddzielny od losowań; pule i szanse zdrapek pozostają takie same. Odbiór nagrody i flaga jej wykorzystania zapisują się atomowo.
+
+## Fotografie bez tła i identyfikacja wizualna
+
+`components/bottle-art.js` przygotowuje przezroczyste warstwy wyłącznie do wyświetlania. Pięć produktów w scenie baru ma dopasowane do oryginału maski sylwetki (z zachowaniem opakowań, bez podłogowych odbić); pozostałe fotografie korzystają z usuwania jasnego, neutralnego tła połączonego z brzegiem obrazu. Nie usuwamy białych pikseli ze środka etykiet. Wyniki są przycinane do widocznej sylwetki i współdzielone między ekranami przez cache Blob URL. Oryginalne fotografie i ich źródła nie są modyfikowane ani zastępowane generowanymi zdjęciami. Nietypowe tła mogą wymagać dodatkowej ręcznej maski.
+
+Logo to własny znak wektorowy bursztynowej kropli ze szklanką. `data/art/scratch-tickets.png` jest wygenerowaną ilustracją interfejsu: zdrapki, srebrna warstwa i moneta; nie przedstawia oficjalnego produktu ani fotografii whisky.

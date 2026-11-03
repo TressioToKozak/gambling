@@ -21,6 +21,12 @@ try{
   page.on('response',r=>{if(r.status()>=400&&!r.url().endsWith('favicon.ico'))errors.push(`${r.status()} ${r.url()}`);});
   await page.goto(`http://127.0.0.1:${server.address().port}/gambling/`);
   await page.locator('dialog').getByRole('button',{name:'Zaczynamy'}).click();
+  await page.waitForFunction(()=>document.querySelectorAll('.world-bottle img.cutout-ready').length===5);
+  const silhouettes=await page.locator('.world-bottle img').evaluateAll(async images=>Promise.all(images.map(async img=>{
+    const copy=new Image();copy.src=img.src;await copy.decode();const canvas=document.createElement('canvas');canvas.width=copy.width;canvas.height=copy.height;const ctx=canvas.getContext('2d');ctx.drawImage(copy,0,0);return {blob:img.src.startsWith('blob:'),corners:[[0,0],[copy.width-1,0],[0,copy.height-1],[copy.width-1,copy.height-1]].map(([x,y])=>ctx.getImageData(x,y,1,1).data[3])};
+  })));
+  assert.equal(silhouettes.length,5);for(const art of silhouettes){assert.equal(art.blob,true);assert.ok(art.corners.every(alpha=>alpha===0),'Product background must be transparent');}
+  console.log('PASS: five hero bottles have real transparent corners');
   await page.locator('nav [data-tab="Marketplace"]').click();
   assert.equal(await page.locator('.product').count(),235);
   await page.locator('.product img').evaluateAll(images=>Promise.all(images.map(img=>{const copy=new Image();copy.src=img.src;return copy.decode();})));

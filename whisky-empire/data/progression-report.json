@@ -1,5 +1,7 @@
 {
   "startingCash": 1000,
+  "starterPassAmount": 500,
+  "starterPassUses": 1,
   "base": {
     "activeMs": 2500,
     "coverage": 0.95,

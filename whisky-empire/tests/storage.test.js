@@ -7,7 +7,7 @@ test('IndexedDB serializes concurrent purchases, reward claims, sales and wash p
  for(let i=0;i<6;i++)await transact(catalog,{type:'tick'},{workId:i,activeMs:2500,coverage:1,distance:1000});
  const bought=await Promise.allSettled([transact(catalog,{type:'buyCard',tier:0}),transact(catalog,{type:'buyCard',tier:0})]);
  assert.equal(bought.filter(r=>r.status==='fulfilled').length,1);
- let s=await transact(catalog);assert.equal(s.balance,0);
+ let s=await transact(catalog);assert.equal(s.balance,500);assert.equal(s.starterPassUsed,true);assert.equal(s.pending.starterDiscount,500);
  await Promise.all([transact(catalog,{type:'reveal'}),transact(catalog,{type:'reveal'})]);
  s=await transact(catalog);assert.equal(s.items.length,1);
  const sold=await Promise.allSettled([transact(catalog,{type:'sell',uid:s.items[0].uid}),transact(catalog,{type:'sell',uid:s.items[0].uid})]);

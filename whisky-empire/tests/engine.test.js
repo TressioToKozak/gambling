@@ -22,7 +22,7 @@ test('themed packs include all matching Black Label and Label editions, with no 
  assert.ok(packs.every(p=>p.pool.every(r=>r.id!==voucher.id&&r.chance>0)));
 });
 test('purchased loyalty lowers prices without changing odds or creating positive expected returns',()=>{
- const s=initial(0);s.upgrades={loyalty:3};const base=pools(catalog),discount=pools(catalog,s);
+ const s=initial(0);s.upgrades={loyalty:3};s.starterPassUsed=true;const base=pools(catalog),discount=pools(catalog,s);
  for(let i=0;i<base.length;i++){assert.equal(discount[i].price,Math.ceil(base[i].basePrice*.92));assert.deepEqual(discount[i].pool,base[i].pool);assert.ok(base[i].ev*1.2<discount[i].price);}
 });
 test('upgrades debit once, reject stale level purchases and preserve old saves',()=>{
@@ -39,4 +39,16 @@ test('maximum work upgrades give a finite earned payout and reject invalid proof
 test('legacy pending fragment remains redeemable after pack replacement',()=>{
  const s=initial(0);s.pending={uid:5,bottle:voucher.id,cost:500,revealed:false};s.seq=5;
  const revealed=command(s,catalog,{type:'reveal'},0);const sold=command(revealed,catalog,{type:'sell',uid:5},0);assert.equal(sold.balance,1200);assert.equal(sold.pending,null);
+});
+
+test('six starter collections have distinct pools and one is affordable with the first pass',()=>{
+ const packs=pools(catalog,initial(0)),starter=packs.filter(p=>p.starter);assert.equal(starter.length,6);assert.equal(packs.length,12);assert.equal(new Set(starter.map(p=>p.pool.map(r=>r.id).join(','))).size,6);
+ const red=starter.find(p=>p.id==='red-club');assert.equal(red.regularPrice,1450);assert.equal(red.price,950);assert.equal(red.starterDiscount,500);assert.ok(red.price<=initial(0).balance);
+});
+test('the starter pass is consumed once across packs and survives a restart',()=>{
+ let s=initial(0);s.balance=10000;const normal=pools(catalog);s=command(s,catalog,{type:'buyCard',packId:'red-club'},0);assert.equal(s.pending.cost,950);assert.equal(s.pending.starterDiscount,500);assert.equal(s.starterPassUsed,true);
+ s=command(s,catalog,{type:'reveal'},0);s=command(s,catalog,{type:'keep'},0);s=JSON.parse(JSON.stringify(s));
+ for(const p of pools(catalog,s)){assert.equal(p.starterDiscount,0);assert.equal(p.price,normal.find(n=>n.id===p.id).price);}
+ s=command(s,catalog,{type:'buyCard',packId:'red-club'},0);assert.equal(s.pending.cost,1450);assert.equal(s.pending.starterDiscount,0);
+ const poor=initial(0);poor.balance=100;assert.throws(()=>command(poor,catalog,{type:'buyCard',packId:'red-club'},0));assert.equal(poor.starterPassUsed,false);
 });

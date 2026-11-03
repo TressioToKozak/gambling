@@ -1,10 +1,10 @@
-import {buildPacks} from './packs.js?v=progress-4';
-import {washRules,upgradeOffer,upgradeLevel} from './upgrades.js?v=progress-4';
-export {washRules,upgradeOffer,upgradeLevel,UPGRADE_DEFS} from './upgrades.js?v=progress-4';
+import {buildPacks} from './packs.js?v=lounge-5';
+import {washRules,upgradeOffer,upgradeLevel} from './upgrades.js?v=lounge-5';
+export {washRules,upgradeOffer,upgradeLevel,UPGRADE_DEFS} from './upgrades.js?v=lounge-5';
 export const WASH_RULES={activeMs:2500,coverage:.95,distance:600};
 // All currency is integer euro cents. This module has no browser dependencies.
 export const tiers = ['Common','Uncommon','Rare','Epic','Legendary','Mythic'];
-export function initial(now=Date.now()) { return {version:1,balance:1000,items:[],pending:null,auctions:[],transactions:[],washed:0,upgrades:{},workId:0,seq:0,tick:0,epoch:now,last:now,prices:{},history:[],news:[],sound:false,tutorial:true,seed:271828}; }
+export function initial(now=Date.now()) { return {version:1,balance:1000,items:[],pending:null,auctions:[],transactions:[],washed:0,starterPassUsed:false,upgrades:{},workId:0,seq:0,tick:0,epoch:now,last:now,prices:{},history:[],news:[],sound:false,tutorial:true,seed:271828}; }
 export function random(s) { s.seed=(Math.imul(1664525,s.seed)+1013904223)>>>0; return s.seed/4294967296; }
 export function validateCatalog(c) { const ids=new Set(); for(const b of c) { if(!b.id||ids.has(b.id)||!b.name?.includes('Johnnie Walker')||!Number.isInteger(b.base)||b.base<=0||!tiers.includes(b.rarity)||!b.source||!b.imageSource||!b.image) throw Error('Nieprawidłowy katalog lub brak źródeł'); ids.add(b.id); } return c; }
 export const voucher={id:'game-fragment',name:'Fragment kolekcji — przedmiot gry',base:200,rarity:'Common',kind:'voucher',image:'',source:'Whisky Empire — fikcyjny przedmiot',imageSource:'Brak fotografii — nagroda tekstowa'};
@@ -32,7 +32,7 @@ export function command(state,c,action,now=Date.now()) {
  if(action.type==='upgrade'){const offer=upgradeOffer(s,action.id);if(action.expectedLevel!==offer.level)throw Error('Poziom już się zmienił. Odśwież ofertę.');if(offer.cost===null)throw Error('Maksymalny poziom');if(s.balance<offer.cost)throw Error('Niewystarczające środki');record(s,'upgrade',-offer.cost,`${offer.name} — poziom ${offer.level+1}`);s.upgrades={...(s.upgrades??{}),[offer.id]:offer.level+1};}
  if(action.type==='sound')s.sound=!s.sound;
  if(action.type==='tutorial')s.tutorial=false;
- if(action.type==='buyCard') { if(s.pending)throw Error('Najpierw odbierz obecną zdrapkę'); const card=action.packId?pools(c,s).find(p=>p.id===action.packId):pools(c,s)[action.tier];if(!card?.pool.length)throw Error('Brak zweryfikowanej puli nagród');if(s.balance<card.price)throw Error('Niewystarczające środki');record(s,'scratch',-card.price,card.name);let r=random(s),reward=card.pool.at(-1).id;for(const p of card.pool){r-=p.chance;if(r<0){reward=p.id;break;}}s.pending={uid:++s.seq,bottle:reward,cost:card.price,packId:card.id,packName:card.name,revealed:false}; }
+ if(action.type==='buyCard') { if(s.pending)throw Error('Najpierw odbierz obecną zdrapkę'); const card=action.packId?pools(c,s).find(p=>p.id===action.packId):pools(c,s)[action.tier];if(!card?.pool.length)throw Error('Brak zweryfikowanej puli nagród');if(s.balance<card.price)throw Error('Niewystarczające środki');record(s,'scratch',-card.price,card.name);if(card.starterDiscount)s.starterPassUsed=true;let r=random(s),reward=card.pool.at(-1).id;for(const p of card.pool){r-=p.chance;if(r<0){reward=p.id;break;}}s.pending={uid:++s.seq,bottle:reward,cost:card.price,packId:card.id,packName:card.name,starterDiscount:card.starterDiscount,revealed:false}; }
  if(action.type==='reveal') {if(!s.pending)throw Error('Brak zdrapki');if(!s.pending.revealed){s.pending.revealed=true;s.items.push({...s.pending,status:'collection',source:'scratch',time:s.last});}}
  if(action.type==='keep'){if(!s.pending?.revealed)throw Error('Zdrap kartę');s.pending=null;}
  if(action.type==='buy'){const b=c.find(b=>b.id===action.id);if(!b||b.kind==='voucher')throw Error('Nieznana butelka');const cost=Math.ceil(value(s,b)*1.03);if(s.balance<cost)throw Error('Niewystarczające środki');record(s,'purchase',-cost,b.name);s.items.push({uid:++s.seq,bottle:b.id,cost,status:'collection',source:'market',time:s.last});}

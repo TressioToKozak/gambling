@@ -61,9 +61,9 @@ Stare Budget/Classic/Silver itd. zastąpiono kolekcjami tematycznymi. **Każda n
 
 Pule mogą się tematycznie pokrywać. Cena nie wynika z kolejności kart. Basic: **60% Red Label, 32% Red Soul, 8% Black Label 12**. Pozostałe pule obejmują wszystkie pasujące, wycenione rekordy i wykorzystują jawny rozkład wag `basePrice^(-power)`. Wagi pochodzą wyłącznie z katalogu, a nie salda, historii strat, zakupów czy tempa gry. Rozdzielamy milion całkowitych jednostek prawdopodobieństwa; każda pozycja ma dodatnią szansę, a suma wynosi 100%.
 
-Ceny pozostałych zestawów są zaokrąglone w górę do pełnego euro z docelowego bazowego EV Quick Sell / 0,70. Rabat obniża cenę, nigdy nie zmienia puli ani szans. Test matematyczny potwierdza ujemne EV także przy maksymalnym rabacie 8% i równoczesnym wzroście wszystkich notowań do górnego limitu 120% bazy. Basic osiąga w tym skrajnym przypadku około 94,95% zwrotu; pozostałe zestawy około 90–91%.
+Ceny pozostałych zestawów są zaokrąglone w górę do pełnego euro z docelowego bazowego EV Quick Sell / 0,70. Rabat obniża cenę, nigdy nie zmienia puli ani szans. Poniższe granice dotyczą powtarzalnych cen; jednorazowy bon startowy opisano osobno. Test matematyczny potwierdza ujemne EV także przy maksymalnym rabacie 8% i równoczesnym wzroście wszystkich notowań do górnego limitu 120% bazy. Basic osiąga w tym skrajnym przypadku około 94,95% zwrotu; pozostałe zestawy około 90–97%.
 
-`data/economy-report.jsonl` zawiera **70 000 losowań**, po 10 000 dla każdej kolekcji, ze stałym seedem do odtwarzalnego porównania. Zaobserwowane zwroty: 72,76 / 69,85 / 68,62 / 69,12 / 69,65 / 70,79 / 70,53%. Wysoki zwrot średni nie oznacza częstych zyskownych trafień; pełny rozkład i wartości widać przed zakupem. `data/progression-report.json` zawiera parametry sprzętu, sumę kosztów i teoretyczne tempo zarabiania.
+`data/economy-report.jsonl` zawiera **120 000 losowań**, po 10 000 dla każdej z 12 kolekcji, ze stałym seedem do odtwarzalnego porównania. Zaobserwowane zwroty wynoszą około 69–74%; pełne wyniki dla każdego zestawu są w raporcie. Wysoki zwrot średni nie oznacza częstych zyskownych trafień; pełny rozkład i wartości widać przed zakupem. `data/progression-report.json` zawiera parametry sprzętu, sumę kosztów i teoretyczne tempo zarabiania.
 
 Podgląd szans otwiera przewijany modal z prawdziwymi zdjęciami, cenami, procentami, wyszukiwarką i bieżącym EV sprzedaży. Nie rozwija ani nie przesuwa kafla zdrapki. Każda karta pokazuje postęp zbierania własnego zestawu. Losowanie, cena i obciążenie konta zapisują się przed rozpoczęciem Canvas; odświeżenie nie zmienia nagrody.
 
@@ -75,7 +75,7 @@ Dom aukcyjny ma wizualne karty produktów, sekundowy zegar, najwyższą ofertę,
 
 Dzień rynku trwa 5 minut i obejmuje 24 notowania. Trend z pamięcią, powrót do bazy, zmienność według rzadkości i zdarzenia korzystają z zapisanego generatora RNG. Ceny mieszczą się w 55–120% bazy. Ticki i rozliczenia są zapisywane razem. Zegar nie cofa się względem ostatniego zapisanego czasu; nadrabianie jest ograniczone do 240 ticków na operację i kontynuuje się przy kolejnych aktualizacjach. Wykresy wykorzystują rzeczywistą historię zapisu, maks. 6000 punktów.
 
-Wszystkie kwoty są całkowitymi centami. IndexedDB wykonuje odczyt, walidację i zapis w pojedynczej transakcji readwrite, również pomiędzy kartami przeglądarki. 17 testów obejmuje finanse, pakiety, rabaty, ulepszenia, stary zapis, współbieżność, mycie, rynek i aukcje. Testy przeglądarkowe sprawdzają wszystkie ekrany, zakup ulepszeń, cenę z rabatem, geometrię kart po otwarciu szans, wyszukiwarkę nagród, zachowanie wyniku po reloadzie i telefon.
+Wszystkie kwoty są całkowitymi centami. IndexedDB wykonuje odczyt, walidację i zapis w pojedynczej transakcji readwrite, również pomiędzy kartami przeglądarki. 19 testów obejmuje finanse, pakiety, rabaty, ulepszenia, stary zapis, współbieżność, mycie, rynek i aukcje. Testy przeglądarkowe sprawdzają wszystkie ekrany, zakup ulepszeń, cenę z rabatem, geometrię kart po otwarciu szans, wyszukiwarkę nagród, zachowanie wyniku po reloadzie i telefon.
 
 ## Katalog, fotografie i źródła
 
@@ -102,7 +102,7 @@ npm run build
 
 Workflow `.github/workflows/pages.yml` testuje i buduje po pushu na `main`, a następnie publikuje wyłącznie `dist`. Repozytorium: **Settings → Pages → Source → GitHub Actions**. Adres: https://tressiotokozak.github.io/gambling/.
 
-Moduły, katalog i zdjęcia używają ścieżek względnych; build działa pod `/gambling/`. `.nojekyll` wyłącza Jekyll. Zależności modułów i zasoby interfejsu mają wersję cache `progress-4`. IndexedDB na Pages jest oddzielne od zapisu localhost, ponieważ należy do originu.
+Moduły, katalog i zdjęcia używają ścieżek względnych; build działa pod `/gambling/`. `.nojekyll` wyłącza Jekyll. Zależności modułów i zasoby interfejsu mają wersję cache `lounge-5`. IndexedDB na Pages jest oddzielne od zapisu localhost, ponieważ należy do originu.
 
 ## Struktura i ograniczenia
 
@@ -115,3 +115,25 @@ Moduły, katalog i zdjęcia używają ścieżek względnych; build działa pod `
 - `app.js` — UI, interakcje, modale i dźwięki; `style.css` — responsywny wygląd gry.
 
 Natywne moduły JavaScript, Canvas, SVG i IndexedDB. Zależności developerskie służą testom. Gra jest single-player i działa lokalnie w przeglądarce. Nie ma autorytatywnego serwera, multiplayera ani synchronizacji urządzeń. Transakcje chronią przed błędami interfejsu i współbieżnością; nie chronią przed świadomą edycją DevTools ani przestawianiem zegara w przyszłość. Reset wymaga potwierdzenia, a czyszczenie danych przeglądarki usuwa postęp.
+
+
+## Aktualizacja: zwarty warsztat i więcej dropów na start
+
+Ekran ulepszeń to jedna konsola z pięcioma wierszami zakupów i podglądem wybranego sprzętu. Wszystkie poziomy, efekty i przyciski pozostają widoczne bez przewijania. Test Chromium obejmuje 1440×1000, 1366×768, 1280×720, 390×844 i 360×740. Na telefonie dodatkowe wyjaśnienia otwiera ikona sprzętu w osobnym oknie.
+
+Plansza aukcji pokazuje wyłącznie aktywne licytacje. Zakończone aukcje nadal są zachowane wraz z rozliczeniami i historią ofert, ale trafiają do osobnego okna „Archiwum”. Przeniesienie do archiwum nie wykonuje żadnej operacji finansowej. Kolekcja otrzymała album z postępem unikatowych wydań i licznikami rzadkości.
+
+Nowa domyślna półka „Na start” zawiera sześć zestawów; „Kolekcjonerskie” pokazuje sześć wcześniejszych droższych zestawów, a „Wszystkie” pełne dwanaście.
+
+| Startowy zestaw | Cena zwykła | Cena z jednorazowym bonem, bez VIP | Pula i szanse |
+|---|---:|---:|---|
+| Red Club | 14,50 € | 9,50 € | Red Soul 90%, Red Label 10% |
+| Basic | 16 € | 11 € | Red Label 60%, Red Soul 32%, Black Label 12 8% |
+| Ruby Rush | 20 € | 15 € | Red Soul 55%, Black Ruby 30%, Red Label Icons 2.0 15% |
+| Double Trouble | 24 € | 19 € | Black Label 12 65%, Double Black 25%, Black Ruby 10% |
+| Cask Lab | 24 € | 19 € | Red Soul 55%, Red Rye Finish 25%, Select Casks Rye Cask Finish 15%, Triple Grain American Oak 5% |
+| Golden Hour | 28 € | 23 € | Black Label 12 65%, Gold Label Reserve 28%, Green Label 15 7% |
+
+**Starter Pass:** jeden jawny bon 5 € na jeden dowolny zakup startowy, dostępny także dla dotychczasowych zapisów, które nie mają tej flagi. Najtańszy drop można dzięki temu kupić od razu z początkowych 10 €. Bon łączy się ze zniżką VIP, ale nie zmienia prawdopodobieństw. Flaga `starterPassUsed` i koszt są zapisywane atomowo przy zakupie, przed animacją; odświeżenie nie przywraca bonu. Niewystarczające środki nie zużywają bonu.
+
+Oferta powitalna jest celową jednorazową dotacją: może mieć dodatnie EV sprzedaży. Jej łączny koszt dla gry jest ograniczony do 5 € na zapis. **Powtarzalne** zakupy wszystkich 12 kolekcji pozostają poniżej 100% EV nawet z rabatem 8% i przy maksymalnych notowaniach. Raport odróżnia zwykłą cenę od hipotetycznej ceny pierwszego wyboru; bonu nie można wykorzystać raz dla każdej karty. Starsza otwarta zdrapka zachowuje swoją uprzednio zapłaconą cenę i nagrodę.

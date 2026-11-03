@@ -1,0 +1,23 @@
+{
+  "startingCash": 1000,
+  "base": {
+    "activeMs": 2500,
+    "coverage": 0.95,
+    "distance": 600,
+    "radius": 48,
+    "cleanMs": 180,
+    "reward": 100
+  },
+  "max": {
+    "activeMs": 1600,
+    "coverage": 0.95,
+    "distance": 600,
+    "radius": 80,
+    "cleanMs": 90,
+    "reward": 180
+  },
+  "baseTheoreticalEuroPerMinute": 24,
+  "maxTheoreticalEuroPerMinute": 67.5,
+  "totalUpgradeCost": 122700,
+  "discountChangesOdds": false
+}

@@ -1,10 +1,12 @@
 # WHISKY EMPIRE
 
-Niezależna gra przeglądarkowa w `gambling/whisky-empire`. Nie zmienia aplikacji katalogowej Dram w `/workspace/whisky`. Wszystkie pieniądze są fikcyjne; brak płatności, wpłat i wypłat.
+Lokalna gra kolekcjonerska: pracuj w barze, rozwijaj sprzęt, zdrapuj tematyczne zestawy, kolekcjonuj Johnnie Walkera i handluj na symulowanym rynku. Wszystkie pieniądze są fikcyjne. Brak płatności, wpłat, wypłat i wymiany waluty.
 
-## Uruchomienie
+Gra jest osobnym projektem `/workspace/gambling/whisky-empire`. Aplikacja katalogowa Dram w `/workspace/whisky` pozostaje niezmieniona.
 
-Node.js 24 (zgodny z `.nvmrc` źródłowego repozytorium):
+## Uruchomienie i testy
+
+Node.js 24:
 
 ```sh
 cd /workspace/gambling/whisky-empire
@@ -14,102 +16,102 @@ npm run build
 npm run dev
 ```
 
-Serwer słucha na porcie 5173. `dist/` zawiera pliki statyczne do hostowania HTTP. Zapis wymaga IndexedDB i stabilnego originu przeglądarki. Gra nie wymaga usług, kont ani sekretów. Nie otwieraj plików przez `file://`.
+Serwer: port 5173. Build `dist/` to samodzielna aplikacja statyczna. IndexedDB wymaga stabilnego originu HTTP/HTTPS; nie otwieraj przez `file://`. Żadne dodatkowe usługi ani sekrety nie są wymagane.
 
 ```sh
-npm run simulate         # 10 000 losowań każdej z 7 kart
-npm run test:browser     # serwer musi już działać; systemowy /usr/bin/chromium
-npm run test:wash        # fizyczne ruchy gąbki i sprawdzenie wypłaty
+npm run simulate       # 10 000 losowań każdego zestawu; raport progresji
+npm run test:browser   # serwer musi działać; zakładki, ulepszenia, szanse, aukcje, telefon
+npm run test:wash      # prawdziwe ruchy gąbki: zwykły sprzęt kontra 15 ulepszeń
+npm run test:pages     # sam uruchamia serwer buildu pod /gambling/
 ```
 
-Opcjonalnie ustaw `CHROMIUM_PATH`, jeśli Chromium jest zainstalowany w innym miejscu. Testy przeglądarkowe używają osobnych, nietrwałych profili i nie usuwają zapisu użytkownika.
+Testy przeglądarkowe używają `/usr/bin/chromium`; można wskazać inny plik przez `CHROMIUM_PATH`. Każdy test korzysta z osobnego profilu. Granty w scenariuszach testowych nie są funkcją aplikacji i nie trafiają do zapisu gracza.
 
-## Dane i fotografie
+## Ulepszenia baru
+
+Pięć ścieżek po trzy poziomy. Zakup obciąża konto dokładnie raz i zapisuje się atomowo. Oczekiwany poziom w żądaniu chroni przed podwójnym zakupem ze starej oferty. Istniejące zapisy bez `upgrades` zaczynają od zerowych poziomów, bez resetowania postępu.
+
+| Ulepszenie | Start → poziomy 1 / 2 / 3 | Koszty kolejnych poziomów |
+|---|---|---|
+| Gąbka XXL | promień 48 → 58 / 68 / 80 px | 12 / 32 / 85 € |
+| Turbo piana | siła 1 → 1,25 / 1,6 / 2× | 18 / 45 / 110 € |
+| Zwinne dłonie | min. 2,5 → 2,2 / 1,9 / 1,6 s | 25 / 65 / 160 € |
+| Napiwki | 1 → 1,25 / 1,50 / 1,80 € za szkło | 20 / 60 / 150 € |
+| Klub kolekcjonera | rabat 0 → 2 / 5 / 8% | 45 / 120 / 280 € |
+
+Większa gąbka ułatwia trafienie, piana skraca wymagane szorowanie plam, a zwinność obniża dolny limit czasu pracy. Ich połączenie daje odczuwalny efekt. Napiwki zwiększają wypłatę dopiero za ukończone mycie. Samo kliknięcie, bezruch i niepełne pokrycie nie płacą. Dowód mycia zawiera jednorazowy `workId`; replay jest odrzucany.
+
+Koszt wszystkich ulepszeń: **1 227 €**. Pierwszy poziom napiwków zwraca się po 80 kieliszkach, drugi po 240, trzeci po 500. To zakup długoterminowy, konkurujący z kolejnymi dropami. Rabat ma największy sens przy droższych kolekcjach. Idealne maksimum wynikające z limitu aktywnego czasu to 24 €/min bez ulepszeń i 67,5 €/min z pełnym sprzętem; rzeczywista prędkość zależy od ruchu i pokrycia powierzchni. Test Chromium: 2,87 s zwykły kieliszek i 2,08 s maksymalne ulepszenia.
+
+Po pierwszym myciu pozostaje jednorazowy darmowy Red Label (`jw-004`). Przycisk odbioru działa także na istniejącym zapisie i nie pozwala duplikować prezentu.
+
+## Nowe zestawy zdrapek
+
+Stare Budget/Classic/Silver itd. zastąpiono kolekcjami tematycznymi. **Każda nowa karta przyznaje dokładnie jedną prawdziwą butelkę z katalogu.** Dawne, zapisane nagrody (także fragment) nadal można odebrać i sprzedać.
+
+| Zestaw | Pula | Cena bez rabatu | Teoretyczny zwrot Quick Sell przy cenach bazowych |
+|---|---|---:|---:|
+| Basic | Red Label / Red Soul / Black Label 12 | 16 € | 72,79% |
+| Black Edition | wszystkie 35 wycenionych Black Labeli | 46 € | 69,12% |
+| Green Room | 4 Green Label / Island Green | 59 € | 69,08% |
+| Labels | wszystkie 151 wydań z samodzielnym „Label” w nazwie | 67 € | 69,08% |
+| Blue Society | 96 Blue Labeli | 240 € | 69,72% |
+| World Passport | 31 wydań podróżniczych i miejskich | 113 € | 69,52% |
+| Collector’s Vault | 53 historyczne i kolekcjonerskie wydania | 172 € | 69,78% |
+
+Pule mogą się tematycznie pokrywać. Cena nie wynika z kolejności kart. Basic: **60% Red Label, 32% Red Soul, 8% Black Label 12**. Pozostałe pule obejmują wszystkie pasujące, wycenione rekordy i wykorzystują jawny rozkład wag `basePrice^(-power)`. Wagi pochodzą wyłącznie z katalogu, a nie salda, historii strat, zakupów czy tempa gry. Rozdzielamy milion całkowitych jednostek prawdopodobieństwa; każda pozycja ma dodatnią szansę, a suma wynosi 100%.
+
+Ceny pozostałych zestawów są zaokrąglone w górę do pełnego euro z docelowego bazowego EV Quick Sell / 0,70. Rabat obniża cenę, nigdy nie zmienia puli ani szans. Test matematyczny potwierdza ujemne EV także przy maksymalnym rabacie 8% i równoczesnym wzroście wszystkich notowań do górnego limitu 120% bazy. Basic osiąga w tym skrajnym przypadku około 94,95% zwrotu; pozostałe zestawy około 90–91%.
+
+`data/economy-report.jsonl` zawiera **70 000 losowań**, po 10 000 dla każdej kolekcji, ze stałym seedem do odtwarzalnego porównania. Zaobserwowane zwroty: 72,76 / 69,85 / 68,62 / 69,12 / 69,65 / 70,79 / 70,53%. Wysoki zwrot średni nie oznacza częstych zyskownych trafień; pełny rozkład i wartości widać przed zakupem. `data/progression-report.json` zawiera parametry sprzętu, sumę kosztów i teoretyczne tempo zarabiania.
+
+Podgląd szans otwiera przewijany modal z prawdziwymi zdjęciami, cenami, procentami, wyszukiwarką i bieżącym EV sprzedaży. Nie rozwija ani nie przesuwa kafla zdrapki. Każda karta pokazuje postęp zbierania własnego zestawu. Losowanie, cena i obciążenie konta zapisują się przed rozpoczęciem Canvas; odświeżenie nie zmienia nagrody.
+
+## Rozgrywka, aukcje i zapis
+
+Każda butelka jest osobnym egzemplarzem. Keep/Na półkę, Quick Sell oraz aukcja operują na tym samym ID. Zakup rynkowy kosztuje 103% ceny; natychmiastowa sprzedaż daje 85%, więc zakup–odsprzedaż zawsze traci przez spread.
+
+Dom aukcyjny ma wizualne karty produktów, sekundowy zegar, najwyższą ofertę, awatary symulowanych kolekcjonerów, animację nowej oferty i osobny modal historii. Wystawianie: zdjęcie, porównanie z rynkiem, cena startowa, opcjonalne Buy Now oraz 1/5/15 min. Prowizja: 5%. Boty mają ograniczoną skłonność do zapłaty i nie gwarantują sprzedaży. Brak ofert zwraca egzemplarz do kolekcji. Podczas aukcji nie można sprzedać tej samej butelki inną drogą; rozliczenie jest jednokrotne, także po odświeżeniu.
+
+Dzień rynku trwa 5 minut i obejmuje 24 notowania. Trend z pamięcią, powrót do bazy, zmienność według rzadkości i zdarzenia korzystają z zapisanego generatora RNG. Ceny mieszczą się w 55–120% bazy. Ticki i rozliczenia są zapisywane razem. Zegar nie cofa się względem ostatniego zapisanego czasu; nadrabianie jest ograniczone do 240 ticków na operację i kontynuuje się przy kolejnych aktualizacjach. Wykresy wykorzystują rzeczywistą historię zapisu, maks. 6000 punktów.
+
+Wszystkie kwoty są całkowitymi centami. IndexedDB wykonuje odczyt, walidację i zapis w pojedynczej transakcji readwrite, również pomiędzy kartami przeglądarki. 17 testów obejmuje finanse, pakiety, rabaty, ulepszenia, stary zapis, współbieżność, mycie, rynek i aukcje. Testy przeglądarkowe sprawdzają wszystkie ekrany, zakup ulepszeń, cenę z rabatem, geometrię kart po otwarciu szans, wyszukiwarkę nagród, zachowanie wyniku po reloadzie i telefon.
+
+## Katalog, fotografie i źródła
 
 Źródło: https://github.com/TressioToKozak/whisky, commit `5c99c4eaed7c48047b58c29e4f442fd08552ccc3`.
 
-Zidentyfikowano 253 rekordy marek Johnnie Walker / John Walker & Sons. Do gry zaimportowano 235 rekordów z użyteczną ceną EUR; 18 rekordów referencyjnych wyłączono z handlu. Lista wyłączeń znajduje się w `data/provenance.json`. Red Soul istnieje w katalogu jako `jw-2e092d2b628a` — nie jest wymyśloną edycją.
+Zidentyfikowano 253 rekordy marek Johnnie Walker / John Walker & Sons. Gra korzysta z 235 rekordów z użyteczną ceną EUR; 18 referencji wyłączono z handlu i losowań. Lista wyłączeń jest w `data/provenance.json`. Red Soul istnieje jako `jw-2e092d2b628a`.
 
-- `data/catalog.json`: oryginalne ID, nazwy, opis, źródło produktu, źródło zdjęcia, pełna referencja cenowa i konfiguracja rzadkości.
-- `data/bottles/`: istniejące lokalne fotografie, skopiowane bez przetwarzania. `object-fit: contain` zachowuje proporcje; niedziałające zdjęcie zastępuje nazwa. Nie powstały sztuczne fotografie butelek.
-- Fotografie i ich etykiety należą do właścicieli. Repozytorium źródłowe nie ustanawia tutaj prawa do dalszej redystrybucji. Przed publicznym wydaniem należy ustalić uprawnienia; zachowano oryginalne URL-e i pochodzenie każdego zdjęcia.
-- Ceny katalogowe to historyczne referencje, nie bieżące oferty ani porady inwestycyjne. Dalej zmienia je wyłącznie symulacja gry.
+`data/catalog.json` zachowuje oryginalne ID, opisy, źródła produktów i fotografii oraz pełne referencje cenowe. Ceny katalogowe są historycznymi referencjami, nie bieżącymi ofertami. Wszystkie dalsze notowania to symulacja gry.
 
-Ponowny import z istniejącego checkoutu (zmienia tylko wygenerowane dane gry):
+Fotografie w `data/bottles/` są skopiowane bez przetwarzania. `components/bottle-art.js` stosuje wyłącznie maski do wyświetlania; pięć produktów z hero ma ręczne sylwetki, a inne usuwanie jasnego neutralnego tła połączonego z brzegiem. Etykiety i proporcje nie są generowane ponownie. Nietypowe tło może wymagać dodatkowej maski. `data/art/scratch-tickets.png` jest osobną wygenerowaną ilustracją interfejsu i nie zastępuje fotografii produktu. Szklanka w minigrze jest proceduralnym rysunkiem Canvas: kryształowe dno, fasety, refleksy, smugi, piana i animowana gąbka.
+
+Prawa do fotografii należą do właścicieli; nie potwierdzono licencji na ich publiczną redystrybucję. Informacje o źródłach pozostają dostępne. Przed dalszym rozpowszechnianiem należy ustalić uprawnienia.
+
+Celowy ponowny import katalogu z istniejącego checkoutu:
 
 ```sh
 npm run import:catalog -- /workspace/whisky
 npm test
-npm run simulate
+node tools/simulate.js > data/economy-report.jsonl
 npm run build
 ```
 
-## Pętla gry
-
-Start: 10 €. Szorowanie 48 obszarów szkła wymaga ruchu, dystansu i minimum 2,5 sekundy aktywnego kontaktu; jedna wypłata = 1 €. W praktyce tempo zależy od dokładności ruchów; test systematycznego szorowania kończy kieliszek po około 3 sekundach. Powtórne użycie dowodu wypłaty jest odrzucane.
-
-Karty mają stałe, jawne pule. Losowanie i obciążenie konta zapisują się atomowo przed animacją. Canvas usuwa warstwę pod kursorem; przy 70% odkrywa resztę. Nagroda trafia raz do kolekcji; Keep, Quick Sell i Auction zarządzają tym samym egzemplarzem.
-
-Każdy egzemplarz ma ID, koszt, datę, źródło i status. Quick Sell daje 85% notowania; zakup na rynku kosztuje 103%. Fragment jest jawnym przedmiotem gry wymienianym na 2 €, nie oficjalną whisky; nie jest sprzedawany na rynku ani licytowany.
-
-Aukcje: 1/5/15 minut, cena startowa, opcjonalne Buy Now, boty o ograniczonej skłonności do zapłaty, historia ofert, prowizja 5%, możliwość braku sprzedaży. Wystawione egzemplarze są zablokowane; rozliczenie następuje raz, również po ponownym otwarciu gry.
-
-## Balans
-
-Dostosowano ceny Silver–Diamond, ponieważ ceny katalogu są niższe od przykładowych wartości w specyfikacji. Classic zachowuje 70% Red Label / 24% Red Soul / 6% Black Label 12.
-
-| Karta | Cena | EV Quick Sell, ceny bazowe | Zwrot teoretyczny |
-|---|---:|---:|---:|
-| Budget | 5 € | 2,96 € | 59,21% |
-| Classic | 15 € | 11,64 € | 77,59% |
-| Silver | 25 € | 16,36 € | 65,43% |
-| Gold | 35 € | 22,34 € | 63,84% |
-| Platinum | 60 € | 40,02 € | 66,70% |
-| Diamond | 250 € | 175,94 € | 70,38% |
-| Legendary | 2 500 € | 1 815,20 € | 72,61% |
-
-Dokładne pule: `game/engine.js`, widoczne również przed zakupem każdej karty. Budget: 90% fragment 2 € i 10% Red Label. Legendary: 67,5% The John Walker, 30% The Directors Blend 2008, 2% 40 Year Old Master's Ruby Reserve, 0,5% 48 Year Old Masters of Flavour.
-
-`data/economy-report.jsonl` zapisuje 70 000 losowań: po 10 000 każdej karty, stały seed do odtwarzalnych porównań. Zaobserwowane zwroty: 58,80 / 77,74 / 65,20 / 63,70 / 66,53 / 71,20 / 72,69%. Samo mycie daje około 20 € na minutę przy 3 s/sztukę; karty mają ujemny oczekiwany wynik. Nie dopasowujemy szans do salda ani historii gracza.
-
-## Rynek i poprawność
-
-Dzień rynkowy = 5 minut, 24 notowania/dzień. Zapisany generator pseudolosowy, trend z pamięcią, powrót do ceny bazowej, zmienność zależna od konfiguracji rzadkości i wydarzenia. Granice cen: 55–120% bazy. Górny limit utrzymuje ujemne EV wszystkich zdrapek nawet przy maksymalnych notowaniach; zapobiega bezryzykownemu masowemu otwieraniu na szczycie rynku. Natychmiastowy zakup–Quick Sell zawsze traci przez spread.
-
-Czas nigdy nie cofa się względem ostatniego zapisanego czasu. Kolejne ticki i rozliczenia zapisują się razem; nadrabianie jest ograniczone do 240 ticków na operację i kontynuuje się przy kolejnych aktualizacjach. Refresh nie losuje historii na nowo. Historia wykresów pochodzi z zapisu (maks. 6000 punktów), a filtry nie tworzą brakujących danych. Wykresy mają podgląd wartości pod kursorem.
-
-IndexedDB wykonuje cały odczyt–modyfikację–zapis w jednej transakcji readwrite, także między kartami przeglądarki. Kwoty są całkowitymi centami. Testy obejmują brak środków, replay nagrody/wypłaty, podwójną sprzedaż, blokadę i rozliczenie aukcji, deterministyczność rynku, cofnięcie zegara, spread i współbieżność IndexedDB.
-
-## Struktura i decyzje
-
-`game/engine.js` — niezależny od DOM model ekonomii, RNG, rynek, aukcje, osiągnięcia. `game/storage.js` — atomowy IndexedDB. `app.js` — osiem ekranów, obsługa Pointer Events, Canvas, dźwięk i wykresy SVG. `style.css` — responsywny motyw. `tools/` — serwer, statyczny build, import i symulacja. `tests/` — logika, transakcje i przeglądarka.
-
-Implementacja korzysta z natywnych modułów JavaScript zamiast preferowanego React/TypeScript/Vite. Nie ma zależności runtime ani zewnętrznych fontów; zależności developerskie służą testom. Wykresy są własnymi interaktywnymi SVG, a nie Recharts. Minigry i efekty są stylizowane: kieliszek rysowany Canvas, piana podczas ruchu, sygnały dźwiękowe i świetlny efekt rzadkiej nagrody.
-
-## Ograniczenia
-
-To lokalna gra single-player. IndexedDB zapewnia poprawność współbieżnych operacji aplikacji, lecz nie chroni przed ręczną edycją zapisu/DevTools ani świadomym przestawianiem zegara w przyszłość. Brak serwera autorytatywnego, synchronizacji urządzeń i multiplayera. Reset wymaga potwierdzenia; wyczyszczenie danych przeglądarki usuwa grę.
-
-Przy awarii zapisu nowa operacja nie jest zatwierdzana; komunikat błędu pozostaje widoczny. Przed publikacją produkcyjną warto rozszerzyć testy dostępności, długotrwałego zapisu i dotyku na fizycznych urządzeniach. Prawa do redystrybucji zdjęć pozostają niepotwierdzone.
-
 ## GitHub Pages
 
-Workflow `.github/workflows/pages.yml` testuje i buduje grę po pushu na `main`, a następnie publikuje wyłącznie `whisky-empire/dist` jako stronę repozytorium. Można go też uruchomić ręcznie w Actions. W repozytorium ustaw **Settings → Pages → Source → GitHub Actions**. Docelowy adres: `https://tressiotokozak.github.io/gambling/`.
+Workflow `.github/workflows/pages.yml` testuje i buduje po pushu na `main`, a następnie publikuje wyłącznie `dist`. Repozytorium: **Settings → Pages → Source → GitHub Actions**. Adres: https://tressiotokozak.github.io/gambling/.
 
-Ścieżki modułów, katalogu i zdjęć są względne, więc gra działa pod prefiksem `/gambling/` i na domenie własnej. Plik `.nojekyll` zapobiega przetwarzaniu przez Jekyll. Test wdrożenia: `npm run build`, następnie `npm run test:pages` (systemowy Chromium). Ten test sprawdza załadowanie modułów, katalogu i wszystkich 235 zdjęć z podkatalogu.
+Moduły, katalog i zdjęcia używają ścieżek względnych; build działa pod `/gambling/`. `.nojekyll` wyłącza Jekyll. Zależności modułów i zasoby interfejsu mają wersję cache `progress-4`. IndexedDB na Pages jest oddzielne od zapisu localhost, ponieważ należy do originu.
 
-Zapis na GitHub Pages jest oddzielny od zapisu na serwerze lokalnym, ponieważ IndexedDB należy do originu przeglądarki.
+## Struktura i ograniczenia
 
-## Aktualizacja: arcade / szybki start
+- `game/engine.js` — komendy i transakcje ekonomii, rynek i aukcje.
+- `game/upgrades.js` — poziomy, koszty i wspólne reguły mycia.
+- `game/packs.js` — kolekcje tematyczne, wagi, ceny i rabaty.
+- `game/storage.js` — atomowy IndexedDB.
+- `components/wash-canvas.js` — renderowanie kryształowej szklanki.
+- `components/bottle-art.js` — przezroczystość oryginalnych fotografii.
+- `app.js` — UI, interakcje, modale i dźwięki; `style.css` — responsywny wygląd gry.
 
-Interfejs całkowicie przebudowano: górny HUD i menu, scena baru z fotografiami butelek, limonkowe i pastelowe karty, ilustracyjne kafle rozgrywki oraz podświetlana kolekcja. Usunięto boczny panel i dominujące statystyki. Szczegóły egzemplarzy schowano pod rozwijanymi historiami.
-
-Mycie: minimum 2,5 s aktywnego ruchu, 95% pokrycia i 600 px ruchu; większa gąbka i szybsze usuwanie plam. Test Chromium ukończył jeden kieliszek w 2,85 s i potwierdził wypłatę 1 €. Samo kliknięcie nadal nie daje wynagrodzenia.
-
-Misja startowa: po pierwszym umytym kieliszku można raz odebrać Red Label (`jw-004`) za darmo. Działa także z dotychczasowym zapisem, bez resetowania konta. To jawny jednorazowy prezent, oddzielny od losowań; pule i szanse zdrapek pozostają takie same. Odbiór nagrody i flaga jej wykorzystania zapisują się atomowo.
-
-## Fotografie bez tła i identyfikacja wizualna
-
-`components/bottle-art.js` przygotowuje przezroczyste warstwy wyłącznie do wyświetlania. Pięć produktów w scenie baru ma dopasowane do oryginału maski sylwetki (z zachowaniem opakowań, bez podłogowych odbić); pozostałe fotografie korzystają z usuwania jasnego, neutralnego tła połączonego z brzegiem obrazu. Nie usuwamy białych pikseli ze środka etykiet. Wyniki są przycinane do widocznej sylwetki i współdzielone między ekranami przez cache Blob URL. Oryginalne fotografie i ich źródła nie są modyfikowane ani zastępowane generowanymi zdjęciami. Nietypowe tła mogą wymagać dodatkowej ręcznej maski.
-
-Logo to własny znak wektorowy bursztynowej kropli ze szklanką. `data/art/scratch-tickets.png` jest wygenerowaną ilustracją interfejsu: zdrapki, srebrna warstwa i moneta; nie przedstawia oficjalnego produktu ani fotografii whisky.
+Natywne moduły JavaScript, Canvas, SVG i IndexedDB. Zależności developerskie służą testom. Gra jest single-player i działa lokalnie w przeglądarce. Nie ma autorytatywnego serwera, multiplayera ani synchronizacji urządzeń. Transakcje chronią przed błędami interfejsu i współbieżnością; nie chronią przed świadomą edycją DevTools ani przestawianiem zegara w przyszłość. Reset wymaga potwierdzenia, a czyszczenie danych przeglądarki usuwa postęp.

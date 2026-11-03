@@ -1,0 +1,12 @@
+// All costs and wages are euro cents; effects depend only on purchased levels.
+export const UPGRADE_DEFS = [
+  {id:'sponge',name:'Gąbka XXL',emoji:'🧽',color:'#9fdac5',description:'Większy zasięg każdego ruchu.',costs:[1200,3200,8500],values:[48,58,68,80],unit:'px',labels:['Zwykła','Duża','XXL','Mega']},
+  {id:'soap',name:'Turbo piana',emoji:'🫧',color:'#91d9ee',description:'Plamy znikają szybciej.',costs:[1800,4500,11000],values:[1,1.25,1.6,2],unit:'×',labels:['Klasyczna','Fresh','Turbo','Ultra']},
+  {id:'speed',name:'Zwinne dłonie',emoji:'⚡',color:'#ffcf77',description:'Krótszy wymagany czas pracy.',costs:[2500,6500,16000],values:[2500,2200,1900,1600],unit:'ms',labels:['Rookie','Quick','Pro','Lightning']},
+  {id:'tips',name:'Napiwki',emoji:'🪙',color:'#d9fb74',description:'Wyższa wypłata za kieliszek.',costs:[2000,6000,15000],values:[100,125,150,180],unit:'cents',labels:['1 €','1,25 €','1,50 €','1,80 €']},
+  {id:'loyalty',name:'Klub kolekcjonera',emoji:'🎟️',color:'#c3a0ff',description:'Stała zniżka na wszystkie zestawy.',costs:[4500,12000,28000],values:[0,.02,.05,.08],unit:'discount',labels:['0%','−2%','−5%','−8%']},
+];
+export function upgradeLevel(s,id){const n=s?.upgrades?.[id];return Number.isInteger(n)&&n>=0&&n<=3?n:0;}
+export function upgradeValue(s,id){const d=UPGRADE_DEFS.find(d=>d.id===id);return d.values[upgradeLevel(s,id)];}
+export function washRules(s){return {activeMs:upgradeValue(s,'speed'),coverage:.95,distance:600,radius:upgradeValue(s,'sponge'),cleanMs:180/upgradeValue(s,'soap'),reward:upgradeValue(s,'tips')};}
+export function upgradeOffer(s,id){const d=UPGRADE_DEFS.find(d=>d.id===id);if(!d)throw Error('Nieznane ulepszenie');const level=upgradeLevel(s,id);return {...d,level,cost:d.costs[level]??null,current:d.values[level],next:d.values[level+1]??null};}

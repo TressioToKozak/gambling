@@ -1,3 +1,3 @@
-import {initial,command,payWash,advance} from './engine.js?v=art-3';
+import {initial,command,payWash,advance} from './engine.js?v=progress-4';
 const open = new Promise((resolve,reject)=>{const r=indexedDB.open('whisky-empire',1);r.onupgradeneeded=()=>r.result.createObjectStore('state');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
 export async function transact(catalog,action,proof){const db=await open;return new Promise((resolve,reject)=>{const tx=db.transaction('state','readwrite');const store=tx.objectStore('state');let next;const r=store.get('game');r.onsuccess=()=>{try{const s=r.result??initial();next=action?.type==='reset'?initial():command(s,catalog,action??{type:'tick'});if(proof)payWash(next,proof);store.put(next,'game');}catch(e){reject(e);tx.abort();}};tx.oncomplete=()=>resolve(next);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error??Error('Transakcja anulowana'));});}

@@ -1,4 +1,5 @@
 const paths={
+ upgrade:'M14 3 5 14h6l-1 7 9-11h-6Z',
  home:'M3 11 12 3l9 8v10h-6v-7H9v7H3Z',
  work:'M5 5h14l-2 15H7ZM4 5h16M8 9l1 7m6-7-1 7M18 2v3M3 12h3',
  scratch:'M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4ZM15 5v3m0 3v2m0 3v3M7 9l3 3-3 3',

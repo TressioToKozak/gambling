@@ -1,9 +1,9 @@
-import {upgradeValue} from './upgrades.js?v=lounge-5';
+import {upgradeValue} from './upgrades.js?v=smooth-6';
 const DEFINITIONS=[
  {id:'basic',starter:true,name:'Basic',subtitle:'Trzy klasyki. Twój pierwszy drop.',icon:'🥃',color:'#ffad62',price:1600,power:0,ids:['jw-004','jw-2e092d2b628a','jw-001'],chances:[.60,.32,.08],risk:'Spokojny start'},
- {id:'red-club',starter:true,name:'Red Club',subtitle:'Red Soul i Red Label. Lekki start.',icon:'♥',color:'#ff929c',price:1450,ids:['jw-2e092d2b628a','jw-004'],chances:[.90,.10],risk:'Na rozgrzewkę'},
- {id:'ruby-rush',starter:true,name:'Ruby Rush',subtitle:'Red Soul, Black Ruby i Red Icons.',icon:'💗',color:'#f69cc8',price:2000,ids:['jw-2e092d2b628a','jw-5a762327e7ef','jw-ffa2a4db4241'],chances:[.55,.30,.15],risk:'Rubinowy drop'},
- {id:'double-trouble',starter:true,name:'Double Trouble',subtitle:'Black Label, Double Black, Black Ruby.',icon:'♠',color:'#c5b6e8',price:2400,ids:['jw-001','jw-005','jw-5a762327e7ef'],chances:[.65,.25,.10],risk:'Ciemna strona'},
+ {id:'red-club',starter:true,name:'Red Club',subtitle:'Red Soul, Red Label i rzadki Red Rye.',icon:'♥',color:'#ff929c',price:1450,ids:['jw-2e092d2b628a','jw-004','jw-851ef6c0baad'],chances:[.90,.08,.02],risk:'Na rozgrzewkę'},
+ {id:'ruby-rush',starter:true,name:'Ruby Rush',subtitle:'Rubinowe etykiety i limitowany Red Label.',icon:'💗',color:'#f69cc8',price:2000,ids:['jw-2e092d2b628a','jw-5a762327e7ef','jw-ffa2a4db4241','jw-ed-631549c6efa6'],chances:[.55,.28,.12,.05],risk:'Rubinowy drop'},
+ {id:'double-trouble',starter:true,name:'Double Trouble',subtitle:'Black Label, Double Black i Triple Cask.',icon:'♠',color:'#c5b6e8',price:2400,ids:['jw-001','jw-005','jw-5a762327e7ef','jw-9b43a737ba02'],chances:[.65,.22,.08,.05],risk:'Ciemna strona'},
  {id:'cask-lab',starter:true,name:'Cask Lab',subtitle:'Red Soul, żyto i eksperymenty z beczką.',icon:'🛢️',color:'#cba475',price:2400,ids:['jw-2e092d2b628a','jw-851ef6c0baad','jw-ed-3dd3c92b6e7f','jw-ed-c1d303c435b6'],chances:[.55,.25,.15,.05],risk:'Eksperymentalny'},
  {id:'golden-hour',starter:true,name:'Golden Hour',subtitle:'Black Label, Gold Reserve i Green Label.',icon:'🌅',color:'#ffd67c',price:2800,ids:['jw-001','jw-003','jw-006'],chances:[.65,.28,.07],risk:'Złoty zachód'},
  {id:'black',name:'Black Edition',subtitle:'Cała rodzina Black Label.',icon:'♠',color:'#c9bedb',power:2.25,match:b=>/\bblack label\b/i.test(b.name),risk:'Kolekcjonerski'},
@@ -12,6 +12,8 @@ const DEFINITIONS=[
  {id:'blue',name:'Blue Society',subtitle:'Świat limitowanych Blue Label.',icon:'💎',color:'#8ec8ff',power:2,match:b=>/\bblue label\b/i.test(b.name),risk:'Premium'},
  {id:'passport',name:'World Passport',subtitle:'Miasta, podróże i rzadkie destynacje.',icon:'🌍',color:'#86ded9',power:1.9,match:b=>/cities|city|airport|explorers|duty|johnnie walker house|striding city|\b(?:berlin|london|paris|milan|rome|sydney|taipei|seoul|beijing|shanghai|miami|barcelona|texas|california|las vegas|new york)\b/i.test(b.name),risk:'Odkrywca'},
  {id:'vault',name:'Collector’s Vault',subtitle:'Archiwalne wydania i białe kruki.',icon:'👑',color:'#ff9b9f',power:1.35,match:b=>b.category==='Kolekcjonerska'||b.rarity==='Mythic'||/ghost|king george|the john walker|directors blend/i.test(b.name),risk:'Wysoka zmienność'},
+ {id:'imperial',name:'Imperial Reserve',subtitle:'Archiwum 1900, Masters i wybrane białe kruki.',icon:'⚜️',color:'#f4d28d',price:1000000,ids:['jw-ed-ef7f391968ed','jw-ed-79e6703b3050','jw-a69c09502203','jw-bbb3e123ff54','jw-aa3098d9fe54','jw-3168521d58c6'],chances:[.30,.22,.20,.14,.08,.06],risk:'ULTRA LIMITED'},
+
 ];
 function weightedPool(items,power){
  const total=items.reduce((n,b)=>n+1/Math.pow(b.base,power),0),units=1000000;
@@ -21,14 +23,23 @@ function weightedPool(items,power){
  for(let i=ranked.length-1;delta<0;i=(i-1+ranked.length)%ranked.length)if(ranked[i].parts>1){ranked[i].parts--;delta++;}
  return rows.map(r=>({id:r.id,chance:r.parts/units}));
 }
+function tilt(pool,items,boost){
+ if(!boost||pool.length<2)return pool.map(r=>({...r}));
+ const ranked=[...items].sort((a,b)=>a.base-b.base||a.id.localeCompare(b.id)),ranks=new Map(ranked.map((b,i)=>[b.id,i/(ranked.length-1)]));
+ const weighted=pool.map(r=>({...r,chance:r.chance*(1+boost*ranks.get(r.id))})),sum=weighted.reduce((n,r)=>n+r.chance,0);
+ return weighted.map(r=>({id:r.id,chance:r.chance/sum}));
+}
 export function buildPacks(c,s){
- const bottles=c.filter(b=>!b.kind&&b.source),discount=upgradeValue(s,'loyalty');
+ const bottles=c.filter(b=>!b.kind&&b.source),discount=upgradeValue(s,'loyalty'),rate=upgradeValue(s,'quicksell'),luck=upgradeValue(s,'luck');
  return DEFINITIONS.map(d=>{
   const items=(d.ids?d.ids.map(id=>bottles.find(b=>b.id===id)).filter(Boolean):bottles.filter(d.match)).sort((a,b)=>a.base-b.base||a.id.localeCompare(b.id));
   const available=d.ids?items.length===d.ids.length:items.length>0;
-  const pool=!available?[]:d.chances?d.ids.map((id,i)=>({id,chance:d.chances[i]})):weightedPool(items,d.power);
-  const ev=pool.reduce((n,r)=>n+Math.floor(c.find(b=>b.id===r.id).base*.85)*r.chance,0);
-  const basePrice=d.price??Math.ceil(ev/.70/100)*100,regularPrice=Math.ceil(basePrice*(1-discount)),starterDiscount=s&&!s.starterPassUsed&&d.starter?500:0,price=regularPrice-starterDiscount;
-  return {id:d.id,name:d.name,subtitle:d.subtitle,icon:d.icon,color:d.color,risk:d.risk,starter:!!d.starter,pool,ev,basePrice,regularPrice,starterDiscount,price,discount,min:items[0]?.base??0,max:items.at(-1)?.base??0,preview:[...new Set([items[0]?.id,items[Math.floor(items.length/2)]?.id,items.at(-1)?.id].filter(Boolean))]};
+  const raw=!available?[]:d.chances?d.ids.map((id,i)=>({id,chance:d.chances[i]})):weightedPool(items,d.power),pool=tilt(raw,items,luck);
+  const ev=pool.reduce((n,r)=>n+Math.floor(c.find(b=>b.id===r.id).base*rate)*r.chance,0);
+  const maxPool=tilt(raw,items,.24),worstEV=maxPool.reduce((n,r)=>n+Math.floor(Math.round(c.find(b=>b.id===r.id).base*1.2)*.88)*r.chance,0);
+  const normalEV=raw.reduce((n,r)=>n+Math.floor(c.find(b=>b.id===r.id).base*.85)*r.chance,0);
+  // Published prices cover all purchased perks together, including maximum market prices.
+  const basePrice=Math.max(d.price??Math.ceil(normalEV/.72/100)*100,Math.ceil(worstEV/.92/.998/50)*50),regularPrice=Math.ceil(basePrice*(1-discount)),starterDiscount=s&&!s.starterPassUsed&&d.starter?500:0,price=regularPrice-starterDiscount;
+  return {id:d.id,name:d.name,subtitle:d.subtitle,icon:d.icon,color:d.color,risk:d.risk,starter:!!d.starter,pool,ev,basePrice,regularPrice,starterDiscount,price,discount,luckLevel:upgradeValue(s,'luck'),quickRate:rate,min:items[0]?.base??0,max:items.at(-1)?.base??0,preview:[...new Set([items[0]?.id,items[Math.floor(items.length/2)]?.id,items.at(-1)?.id].filter(Boolean))]};
  });
 }

@@ -32,7 +32,7 @@ function renderCutout(img,id){
 function cutout(src,id){if(!cache.has(src)){cache.set(src,new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{try{resolve(renderCutout(img,id));}catch(e){reject(e);}};img.onerror=reject;img.src=src;}));}return cache.get(src);}
 export function mountBottleArt(root){
  root.querySelectorAll('img[data-bottle]').forEach(img=>{
-  const original=img.getAttribute('src');
+  if(img.dataset.preparing)return;const original=img.getAttribute('src');
   const prepare=()=>{if(img.dataset.preparing)return;img.dataset.preparing='true';cutout(original,img.dataset.bottle).then(url=>{if(!img.isConnected)return;img.src=url;img.classList.add('cutout-ready');}).catch(()=>{img.classList.add('cutout-ready');});};
   img.addEventListener('load',prepare,{once:true});if(img.complete&&img.naturalWidth)prepare();
  });

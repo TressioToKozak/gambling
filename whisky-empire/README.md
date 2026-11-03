@@ -1,81 +1,94 @@
 # WHISKY EMPIRE
 
-Lokalna gra kolekcjonerska: pracuj w barze, rozwijaj sprzęt, zdrapuj tematyczne zestawy, kolekcjonuj Johnnie Walkera i handluj na symulowanym rynku. Wszystkie pieniądze są fikcyjne. Brak płatności, wpłat, wypłat i wymiany waluty.
+Gra kolekcjonerska Johnnie Walker z fikcyjnym euro, pracą w barze, zdrapkami i rynkiem. Osobna aplikacja; katalog Dram pozostaje niezmieniony.
 
-Gra jest osobnym projektem `/workspace/gambling/whisky-empire`. Aplikacja katalogowa Dram w `/workspace/whisky` pozostaje niezmieniona.
+## Uruchomienie
 
-## Uruchomienie i testy
-
-Node.js 24:
+Node.js 24, z katalogu `whisky-empire`:
 
 ```sh
-cd /workspace/gambling/whisky-empire
 npm ci
 npm test
 npm run build
 npm run dev
 ```
 
-Serwer: port 5173. Build `dist/` to samodzielna aplikacja statyczna. IndexedDB wymaga stabilnego originu HTTP/HTTPS; nie otwieraj przez `file://`. Żadne dodatkowe usługi ani sekrety nie są wymagane.
+Serwer HTTP: port 5173. Build `dist/` działa pod `/gambling/`. IndexedDB wymaga stabilnego originu HTTP/HTTPS. Brak sekretów i usług backendowych.
 
 ```sh
-npm run simulate       # 10 000 losowań każdego zestawu; raport progresji
-npm run test:browser   # serwer musi działać; zakładki, ulepszenia, szanse, aukcje, telefon
-npm run test:wash      # prawdziwe ruchy gąbki: zwykły sprzęt kontra 15 ulepszeń
-npm run test:pages     # sam uruchamia serwer buildu pod /gambling/
+npm run simulate
+npm run test:browser
+npm run test:wash
+npm run test:pages
 ```
 
-Testy przeglądarkowe używają `/usr/bin/chromium`; można wskazać inny plik przez `CHROMIUM_PATH`. Każdy test korzysta z osobnego profilu. Granty w scenariuszach testowych nie są funkcją aplikacji i nie trafiają do zapisu gracza.
+Testy browser/wash wymagają uruchomionego serwera oraz Chromium (`CHROMIUM_PATH`, domyślnie `/usr/bin/chromium`). Test Pages uruchamia własny serwer buildu. Granty używane w testach nie są funkcją gry.
 
-## Ulepszenia baru
+## Płynny interfejs
 
-Pięć ścieżek po trzy poziomy. Zakup obciąża konto dokładnie raz i zapisuje się atomowo. Oczekiwany poziom w żądaniu chroni przed podwójnym zakupem ze starej oferty. Istniejące zapisy bez `upgrades` zaczynają od zerowych poziomów, bez resetowania postępu.
+Header i nawigacja pozostają tymi samymi elementami DOM i mają stałe wymiary. Tick rynku aktualizuje notowania i licytacje, bez ponownego renderowania strony. Umycie resetuje tylko stan tej samej szklanki Canvas. Kupowanie na rynku i Quick Sell aktualizują odpowiednie dane lub kartę.
 
-| Ulepszenie | Start → poziomy 1 / 2 / 3 | Koszty kolejnych poziomów |
-|---|---|---|
-| Gąbka XXL | promień 48 → 58 / 68 / 80 px | 12 / 32 / 85 € |
-| Turbo piana | siła 1 → 1,25 / 1,6 / 2× | 18 / 45 / 110 € |
-| Zwinne dłonie | min. 2,5 → 2,2 / 1,9 / 1,6 s | 25 / 65 / 160 € |
-| Napiwki | 1 → 1,25 / 1,50 / 1,80 € za szkło | 20 / 60 / 150 € |
-| Klub kolekcjonera | rabat 0 → 2 / 5 / 8% | 45 / 120 / 280 € |
+Zdrapka otwiera się w osobnym oknie. Można je zamknąć i wznowić; nagroda i koszt zapisują się atomowo przy zakupie. Moneta podąża za kursorem/palcem, a jej rozmiar odpowiada szerokości ścierania. Odkrycie 70% kończy animację. Przyciski zarządzają jednym zapisanym egzemplarzem, bez ponownego przyznania.
 
-Większa gąbka ułatwia trafienie, piana skraca wymagane szorowanie plam, a zwinność obniża dolny limit czasu pracy. Ich połączenie daje odczuwalny efekt. Napiwki zwiększają wypłatę dopiero za ukończone mycie. Samo kliknięcie, bezruch i niepełne pokrycie nie płacą. Dowód mycia zawiera jednorazowy `workId`; replay jest odrzucany.
+## Ulepszenia
 
-Koszt wszystkich ulepszeń: **1 227 €**. Pierwszy poziom napiwków zwraca się po 80 kieliszkach, drugi po 240, trzeci po 500. To zakup długoterminowy, konkurujący z kolejnymi dropami. Rabat ma największy sens przy droższych kolekcjach. Idealne maksimum wynikające z limitu aktywnego czasu to 24 €/min bez ulepszeń i 67,5 €/min z pełnym sprzętem; rzeczywista prędkość zależy od ruchu i pokrycia powierzchni. Test Chromium: 2,87 s zwykły kieliszek i 2,08 s maksymalne ulepszenia.
+Dwie zakładki, każda z czterema ścieżkami po trzy poziomy:
 
-Po pierwszym myciu pozostaje jednorazowy darmowy Red Label (`jw-004`). Przycisk odbioru działa także na istniejącym zapisie i nie pozwala duplikować prezentu.
+| Bar | Efekt start → maksimum |
+|---|---|
+| Gąbka | promień 48 → 80 px |
+| Płyn | skuteczność ×1 → ×2 |
+| Tempo | minimalna aktywna praca 2,5 → 1,6 s |
+| Napiwki | wypłata 1 → 1,80 € |
 
-## Nowe zestawy zdrapek
+| Zdrapki | Efekt start → maksimum |
+|---|---|
+| VIP | rabat 0 → 8% |
+| Moneta | promień 22 → 43 px |
+| Quick Sell | 85 → 88% rynku |
+| Fortuna | do +24% względnej wagi cenniejszych wydań |
 
-Stare Budget/Classic/Silver itd. zastąpiono kolekcjami tematycznymi. **Każda nowa karta przyznaje dokładnie jedną prawdziwą butelkę z katalogu.** Dawne, zapisane nagrody (także fragment) nadal można odebrać i sprzedać.
+Fortuna porządkuje nagrody według ceny bazowej, zwiększa wagi proporcjonalnie do miejsca i normalizuje sumę do 100%. +24% wagi nie oznacza +24 punktów procentowych. Dokładne szanse i EV są widoczne przed zakupem. Nie zależą od salda, strat ani historii zakupów. Zakup ulepszenia nie zmienia już wylosowanej nagrody.
 
-| Zestaw | Pula | Cena bez rabatu | Teoretyczny zwrot Quick Sell przy cenach bazowych |
-|---|---|---:|---:|
-| Basic | Red Label / Red Soul / Black Label 12 | 16 € | 72,79% |
-| Black Edition | wszystkie 35 wycenionych Black Labeli | 46 € | 69,12% |
-| Green Room | 4 Green Label / Island Green | 59 € | 69,08% |
-| Labels | wszystkie 151 wydań z samodzielnym „Label” w nazwie | 67 € | 69,08% |
-| Blue Society | 96 Blue Labeli | 240 € | 69,72% |
-| World Passport | 31 wydań podróżniczych i miejskich | 113 € | 69,52% |
-| Collector’s Vault | 53 historyczne i kolekcjonerskie wydania | 172 € | 69,78% |
+24 poziomy kosztują razem 3 467 €. Zachowane są stare poziomy i zapisy. Zakładki mieszczą się bez scrollowania przy testowanych rozmiarach 1440×1000, 1366×768, 1280×720, 390×844 i 360×740. Mycie wymaga pokrycia zabrudzeń, ruchu oraz aktywnego czasu; klikanie nie daje wypłaty.
 
-Pule mogą się tematycznie pokrywać. Cena nie wynika z kolejności kart. Basic: **60% Red Label, 32% Red Soul, 8% Black Label 12**. Pozostałe pule obejmują wszystkie pasujące, wycenione rekordy i wykorzystują jawny rozkład wag `basePrice^(-power)`. Wagi pochodzą wyłącznie z katalogu, a nie salda, historii strat, zakupów czy tempa gry. Rozdzielamy milion całkowitych jednostek prawdopodobieństwa; każda pozycja ma dodatnią szansę, a suma wynosi 100%.
+## Zestawy i balans
 
-Ceny pozostałych zestawów są zaokrąglone w górę do pełnego euro z docelowego bazowego EV Quick Sell / 0,70. Rabat obniża cenę, nigdy nie zmienia puli ani szans. Poniższe granice dotyczą powtarzalnych cen; jednorazowy bon startowy opisano osobno. Test matematyczny potwierdza ujemne EV także przy maksymalnym rabacie 8% i równoczesnym wzroście wszystkich notowań do górnego limitu 120% bazy. Basic osiąga w tym skrajnym przypadku około 94,95% zwrotu; pozostałe zestawy około 90–97%.
+13 tematycznych kolekcji, w tym sześć startowych. Każda przyznaje jedną butelkę. Jednorazowy bon startowy −5 € jest skończoną dotacją; Red Club jest dostępny za początkowe 10 €.
 
-`data/economy-report.jsonl` zawiera **120 000 losowań**, po 10 000 dla każdej z 12 kolekcji, ze stałym seedem do odtwarzalnego porównania. Zaobserwowane zwroty wynoszą około 69–74%; pełne wyniki dla każdego zestawu są w raporcie. Wysoki zwrot średni nie oznacza częstych zyskownych trafień; pełny rozkład i wartości widać przed zakupem. `data/progression-report.json` zawiera parametry sprzętu, sumę kosztów i teoretyczne tempo zarabiania.
+| Zestaw | Zwykła cena bez ulepszeń |
+|---|---:|
+| Basic | 16 € |
+| Red Club | 15 € |
+| Ruby Rush | 23 € |
+| Double Trouble | 25,50 € |
+| Cask | 24,50 € |
+| Golden Hour | 28,50 € |
+| Black | 45 € |
+| Green | 57 € |
+| Labels | 65,50 € |
+| Blue | 233 € |
+| Passport | 110,50 € |
+| Vault | 171 € |
+| Imperial Reserve | 10 000 € |
 
-Podgląd szans otwiera przewijany modal z prawdziwymi zdjęciami, cenami, procentami, wyszukiwarką i bieżącym EV sprzedaży. Nie rozwija ani nie przesuwa kafla zdrapki. Każda karta pokazuje postęp zbierania własnego zestawu. Losowanie, cena i obciążenie konta zapisują się przed rozpoczęciem Canvas; odświeżenie nie zmienia nagrody.
+Red Club: Red Soul 90%, Red Label 8%, Red Rye 2%. Basic: Red Label 60%, Red Soul 32%, Black Label 8%. Pozostałe pełne pule i aktualne szanse znajdują się w grze oraz `game/packs.js`. Każda kolekcja ma najwyższą nagrodę, której bazowy Quick Sell przekracza zwykłą cenę biletu; popularne trafienia przeważnie przynoszą stratę.
 
-## Rozgrywka, aukcje i zapis
+Imperial Reserve zawiera wyłącznie sześć istniejących rekordów: Commemorative 1949 (30%), Directors Blend 2008 (22%), Vault The Couture Blend (20%), Master's Ruby Reserve 40YO (14%), White Label około 1900 (8%) i Masters of Flavour 48YO (6%).
 
-Każda butelka jest osobnym egzemplarzem. Keep/Na półkę, Quick Sell oraz aukcja operują na tym samym ID. Zakup rynkowy kosztuje 103% ceny; natychmiastowa sprzedaż daje 85%, więc zakup–odsprzedaż zawsze traci przez spread.
+Cena uwzględnia EV bazowe i ograniczenie dla maksymalnej Fortuny, Quick Sell 88%, VIP 8% oraz rynku przy 120% bazy. Powtarzalne zakupy mają ujemne EV we wszystkich 64 kombinacjach tych ulepszeń. Bon powitalny jest oddzielnym wyjątkiem ograniczonym do 5 € na zapis.
 
-Dom aukcyjny ma wizualne karty produktów, sekundowy zegar, najwyższą ofertę, awatary symulowanych kolekcjonerów, animację nowej oferty i osobny modal historii. Wystawianie: zdjęcie, porównanie z rynkiem, cena startowa, opcjonalne Buy Now oraz 1/5/15 min. Prowizja: 5%. Boty mają ograniczoną skłonność do zapłaty i nie gwarantują sprzedaży. Brak ofert zwraca egzemplarz do kolekcji. Podczas aukcji nie można sprzedać tej samej butelki inną drogą; rozliczenie jest jednokrotne, także po odświeżeniu.
+`data/economy-report.jsonl`: 130 000 losowań ze stałym seedem, po 10 000 na zestaw. Zaobserwowany bazowy zwrot Quick Sell wynosi około 70–73%, Imperial około 63%. Najwyższy obliczony zwrot przy wszystkich ulepszeniach i maksymalnych notowaniach pozostaje poniżej 100%. `data/progression-report.json` zapisuje koszty i tempo rozwoju.
 
-Dzień rynku trwa 5 minut i obejmuje 24 notowania. Trend z pamięcią, powrót do bazy, zmienność według rzadkości i zdarzenia korzystają z zapisanego generatora RNG. Ceny mieszczą się w 55–120% bazy. Ticki i rozliczenia są zapisywane razem. Zegar nie cofa się względem ostatniego zapisanego czasu; nadrabianie jest ograniczone do 240 ticków na operację i kontynuuje się przy kolejnych aktualizacjach. Wykresy wykorzystują rzeczywistą historię zapisu, maks. 6000 punktów.
+## Rynek i aukcje
 
-Wszystkie kwoty są całkowitymi centami. IndexedDB wykonuje odczyt, walidację i zapis w pojedynczej transakcji readwrite, również pomiędzy kartami przeglądarki. 19 testów obejmuje finanse, pakiety, rabaty, ulepszenia, stary zapis, współbieżność, mycie, rynek i aukcje. Testy przeglądarkowe sprawdzają wszystkie ekrany, zakup ulepszeń, cenę z rabatem, geometrię kart po otwarciu szans, wyszukiwarkę nagród, zachowanie wyniku po reloadzie i telefon.
+Rynek wykorzystuje zapisany seed, tick, trendy, powrót do średniej, wydarzenia i limity cen. Historia wykresów pochodzi z zapisu. Zakup kosztuje 103% rynku. Boty licytują do 108% wartości; po prowizji 5% maksimum 102,6% nie umożliwia gwarantowanego arbitrażu zakup–aukcja przy stałej cenie.
+
+Formularz sugeruje start 94% rynku i pokazuje szacowane zainteresowanie oraz kwotę po prowizji. Konkurencyjne ceny przyciągają więcej ofert, ale nie gwarantują sprzedaży. W 10 000 niezależnych scenariuszy (rynek 19 €, start 18 €, 1 minuta) sprzedano 85,56% butelek; raport `data/auction-report.json`. Aukcje zakończone są w archiwum. Egzemplarz pozostaje zablokowany do rozliczenia, a niesprzedany wraca do kolekcji.
+
+## Weryfikacja i trwałość
+
+24 testy logiki: atomowe finanse, zapis, współbieżność, pojedyncze wypłaty, pending, ulepszenia, szanse, rynek i rozliczenia. Testy Chromium sprawdzają niezmienność elementów headera, szklanki i aktywnej aukcji, popup i monetę, zapis po odświeżeniu, wszystkie ekrany, mobile i brak scrollowania warsztatu. Test Pages sprawdza build pod prefiksem, 235 fotografii i maski hero.
 
 ## Katalog, fotografie i źródła
 
@@ -100,9 +113,9 @@ npm run build
 
 ## GitHub Pages
 
-Workflow `.github/workflows/pages.yml` testuje i buduje po pushu na `main`, a następnie publikuje wyłącznie `dist`. Repozytorium: **Settings → Pages → Source → GitHub Actions**. Adres: https://tressiotokozak.github.io/gambling/.
+`.github/workflows/pages.yml` testuje, buduje i publikuje `dist/` po pushu na `main`. Ustawienie repozytorium: Settings → Pages → Source → GitHub Actions.
 
-Moduły, katalog i zdjęcia używają ścieżek względnych; build działa pod `/gambling/`. `.nojekyll` wyłącza Jekyll. Zależności modułów i zasoby interfejsu mają wersję cache `lounge-5`. IndexedDB na Pages jest oddzielne od zapisu localhost, ponieważ należy do originu.
+Adres: https://tressiotokozak.github.io/gambling/. Ścieżki zasobów są względne, cache modułów `smooth-6`. Zapis Pages jest oddzielny od localhost; aktualizacja zachowuje istniejący zapis na tym samym originie.
 
 ## Struktura i ograniczenia
 
@@ -115,25 +128,3 @@ Moduły, katalog i zdjęcia używają ścieżek względnych; build działa pod `
 - `app.js` — UI, interakcje, modale i dźwięki; `style.css` — responsywny wygląd gry.
 
 Natywne moduły JavaScript, Canvas, SVG i IndexedDB. Zależności developerskie służą testom. Gra jest single-player i działa lokalnie w przeglądarce. Nie ma autorytatywnego serwera, multiplayera ani synchronizacji urządzeń. Transakcje chronią przed błędami interfejsu i współbieżnością; nie chronią przed świadomą edycją DevTools ani przestawianiem zegara w przyszłość. Reset wymaga potwierdzenia, a czyszczenie danych przeglądarki usuwa postęp.
-
-
-## Aktualizacja: zwarty warsztat i więcej dropów na start
-
-Ekran ulepszeń to jedna konsola z pięcioma wierszami zakupów i podglądem wybranego sprzętu. Wszystkie poziomy, efekty i przyciski pozostają widoczne bez przewijania. Test Chromium obejmuje 1440×1000, 1366×768, 1280×720, 390×844 i 360×740. Na telefonie dodatkowe wyjaśnienia otwiera ikona sprzętu w osobnym oknie.
-
-Plansza aukcji pokazuje wyłącznie aktywne licytacje. Zakończone aukcje nadal są zachowane wraz z rozliczeniami i historią ofert, ale trafiają do osobnego okna „Archiwum”. Przeniesienie do archiwum nie wykonuje żadnej operacji finansowej. Kolekcja otrzymała album z postępem unikatowych wydań i licznikami rzadkości.
-
-Nowa domyślna półka „Na start” zawiera sześć zestawów; „Kolekcjonerskie” pokazuje sześć wcześniejszych droższych zestawów, a „Wszystkie” pełne dwanaście.
-
-| Startowy zestaw | Cena zwykła | Cena z jednorazowym bonem, bez VIP | Pula i szanse |
-|---|---:|---:|---|
-| Red Club | 14,50 € | 9,50 € | Red Soul 90%, Red Label 10% |
-| Basic | 16 € | 11 € | Red Label 60%, Red Soul 32%, Black Label 12 8% |
-| Ruby Rush | 20 € | 15 € | Red Soul 55%, Black Ruby 30%, Red Label Icons 2.0 15% |
-| Double Trouble | 24 € | 19 € | Black Label 12 65%, Double Black 25%, Black Ruby 10% |
-| Cask Lab | 24 € | 19 € | Red Soul 55%, Red Rye Finish 25%, Select Casks Rye Cask Finish 15%, Triple Grain American Oak 5% |
-| Golden Hour | 28 € | 23 € | Black Label 12 65%, Gold Label Reserve 28%, Green Label 15 7% |
-
-**Starter Pass:** jeden jawny bon 5 € na jeden dowolny zakup startowy, dostępny także dla dotychczasowych zapisów, które nie mają tej flagi. Najtańszy drop można dzięki temu kupić od razu z początkowych 10 €. Bon łączy się ze zniżką VIP, ale nie zmienia prawdopodobieństw. Flaga `starterPassUsed` i koszt są zapisywane atomowo przy zakupie, przed animacją; odświeżenie nie przywraca bonu. Niewystarczające środki nie zużywają bonu.
-
-Oferta powitalna jest celową jednorazową dotacją: może mieć dodatnie EV sprzedaży. Jej łączny koszt dla gry jest ograniczony do 5 € na zapis. **Powtarzalne** zakupy wszystkich 12 kolekcji pozostają poniżej 100% EV nawet z rabatem 8% i przy maksymalnych notowaniach. Raport odróżnia zwykłą cenę od hipotetycznej ceny pierwszego wyboru; bonu nie można wykorzystać raz dla każdej karty. Starsza otwarta zdrapka zachowuje swoją uprzednio zapłaconą cenę i nagrodę.

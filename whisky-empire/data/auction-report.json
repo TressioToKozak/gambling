@@ -1,0 +1,10 @@
+{
+  "runs": 10000,
+  "market": 1900,
+  "start": 1800,
+  "minutes": 1,
+  "sold": 8556,
+  "unsold": 1444,
+  "salePercent": 85.56,
+  "averageNetWhenSold": 1725.5472183263207
+}

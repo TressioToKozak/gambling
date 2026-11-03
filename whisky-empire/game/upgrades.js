@@ -1,10 +1,14 @@
 // All costs and wages are euro cents; effects depend only on purchased levels.
 export const UPGRADE_DEFS = [
-  {id:'sponge',name:'Gąbka XXL',emoji:'🧽',color:'#9fdac5',description:'Większy zasięg każdego ruchu.',costs:[1200,3200,8500],values:[48,58,68,80],unit:'px',labels:['Zwykła','Duża','XXL','Mega']},
-  {id:'soap',name:'Turbo piana',emoji:'🫧',color:'#91d9ee',description:'Plamy znikają szybciej.',costs:[1800,4500,11000],values:[1,1.25,1.6,2],unit:'×',labels:['Klasyczna','Fresh','Turbo','Ultra']},
-  {id:'speed',name:'Zwinne dłonie',emoji:'⚡',color:'#ffcf77',description:'Krótszy wymagany czas pracy.',costs:[2500,6500,16000],values:[2500,2200,1900,1600],unit:'ms',labels:['Rookie','Quick','Pro','Lightning']},
-  {id:'tips',name:'Napiwki',emoji:'🪙',color:'#d9fb74',description:'Wyższa wypłata za kieliszek.',costs:[2000,6000,15000],values:[100,125,150,180],unit:'cents',labels:['1 €','1,25 €','1,50 €','1,80 €']},
-  {id:'loyalty',name:'Klub kolekcjonera',emoji:'🎟️',color:'#c3a0ff',description:'Stała zniżka na wszystkie zestawy.',costs:[4500,12000,28000],values:[0,.02,.05,.08],unit:'discount',labels:['0%','−2%','−5%','−8%']},
+  {id:'sponge',group:'bar',name:'Gąbka XXL',emoji:'🧽',color:'#9fdac5',description:'Większy zasięg każdego ruchu.',costs:[1200,3200,8500],values:[48,58,68,80],unit:'px',labels:['Zwykła','Duża','XXL','Mega']},
+  {id:'soap',group:'bar',name:'Turbo piana',emoji:'🫧',color:'#91d9ee',description:'Plamy znikają szybciej.',costs:[1800,4500,11000],values:[1,1.25,1.6,2],unit:'×',labels:['Klasyczna','Fresh','Turbo','Ultra']},
+  {id:'speed',group:'bar',name:'Zwinne dłonie',emoji:'⚡',color:'#ffcf77',description:'Krótszy wymagany czas pracy.',costs:[2500,6500,16000],values:[2500,2200,1900,1600],unit:'ms',labels:['Rookie','Quick','Pro','Lightning']},
+  {id:'tips',group:'bar',name:'Napiwki',emoji:'🪙',color:'#d9fb74',description:'Wyższa wypłata za kieliszek.',costs:[2000,6000,15000],values:[100,125,150,180],unit:'cents',labels:['1 €','1,25 €','1,50 €','1,80 €']},
+  {id:'loyalty',group:'scratch',name:'Klub kolekcjonera',emoji:'🎟️',color:'#c3a0ff',description:'Stała zniżka na wszystkie zestawy.',costs:[4500,12000,28000],values:[0,.02,.05,.08],unit:'discount',labels:['0%','−2%','−5%','−8%']},
+  {id:'coin',group:'scratch',name:'Moneta XXL',emoji:'🪙',color:'#ffce79',description:'Większa moneta odsłania szerszy pas zdrapki.',costs:[2000,6000,14000],values:[22,28,35,43],unit:'px',labels:['Pocket','Large','XL','XXL']},
+  {id:'quicksell',group:'scratch',name:'Ekspert sprzedaży',emoji:'💰',color:'#a8e0b1',description:'Quick Sell: większy procent bieżącej ceny rynkowej.',costs:[7000,20000,60000],values:[.85,.86,.87,.88],unit:'rate',labels:['85%','86%','87%','88%']},
+  {id:'luck',group:'scratch',name:'Nos kolekcjonera',emoji:'🍀',color:'#c5a5ff',description:'Zwiększa względne wagi cenniejszych wydań. Dokładne szanse w każdym zestawie.',costs:[9000,26000,80000],values:[0,.08,.16,.24],unit:'luck',labels:['0%','+8%','+16%','+24%']},
+
 ];
 export function upgradeLevel(s,id){const n=s?.upgrades?.[id];return Number.isInteger(n)&&n>=0&&n<=3?n:0;}
 export function upgradeValue(s,id){const d=UPGRADE_DEFS.find(d=>d.id===id);return d.values[upgradeLevel(s,id)];}

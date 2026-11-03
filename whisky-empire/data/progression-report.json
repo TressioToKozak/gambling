@@ -20,6 +20,9 @@
   },
   "baseTheoreticalEuroPerMinute": 24,
   "maxTheoreticalEuroPerMinute": 67.5,
-  "totalUpgradeCost": 122700,
-  "discountChangesOdds": false
+  "totalUpgradeCost": 346700,
+  "discountChangesOdds": false,
+  "purchasedLuckChangesOdds": true,
+  "maxLuckWeightBoost": 0.24,
+  "maxQuickSellRate": 0.88
 }

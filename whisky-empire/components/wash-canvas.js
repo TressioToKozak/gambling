@@ -1,5 +1,5 @@
 // Procedural crystal tumbler: no external product photograph or generated label.
-export function drawWashScene(ctx,{dirt,sponge,progress=0,radius=48,time=0}){
+function drawGlass(ctx){
  ctx.clearRect(0,0,520,430);
  ctx.save();
  const shadow=ctx.createRadialGradient(263,374,5,263,374,158);shadow.addColorStop(0,'#071e2999');shadow.addColorStop(1,'#071e2900');ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(263,374,157,26,0,0,Math.PI*2);ctx.fill();
@@ -10,20 +10,30 @@ export function drawWashScene(ctx,{dirt,sponge,progress=0,radius=48,time=0}){
  for(let i=0;i<11;i++){
   const top=123+i*26,bottom=151+i*21.5;ctx.beginPath();ctx.moveTo(top,113);ctx.lineTo(top+18,113);ctx.lineTo(bottom+15,354);ctx.lineTo(bottom,354);ctx.closePath();const facet=ctx.createLinearGradient(top,0,top+19,0);facet.addColorStop(0,'#efffff02');facet.addColorStop(.75,'#efffff08');facet.addColorStop(1,'#efffff35');ctx.fillStyle=facet;ctx.fill();
  }
- // Warm ring marks and fingerprints disappear with the actual cleaning mask.
- dirt.forEach((spot,i)=>{
-  if(spot.left<=0)return;ctx.save();ctx.translate(spot.x,spot.y);ctx.rotate(Math.sin(i*2.7)*.7);ctx.globalAlpha=spot.left*.60;
-  if(i%7===0){ctx.strokeStyle='#c9ac7d88';ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(0,0,21,9,0,.3,5.4);ctx.stroke();ctx.strokeStyle='#a78a6333';ctx.lineWidth=3;ctx.stroke();}
-  else if(i%3===0){ctx.strokeStyle='#d6c3a960';ctx.lineWidth=1;for(let j=0;j<3;j++){ctx.beginPath();ctx.ellipse(j-2,0,6+j*2,4+j,0,.5,4.8);ctx.stroke();}}
-  else{const stain=ctx.createRadialGradient(0,0,1,0,0,16);stain.addColorStop(0,'#c2aa7d42');stain.addColorStop(1,'#b2926c00');ctx.fillStyle=stain;ctx.beginPath();ctx.ellipse(0,0,16,9,0,0,Math.PI*2);ctx.fill();}
-  ctx.fillStyle='#c0a57744';for(let j=0;j<3;j++){ctx.beginPath();ctx.arc(Math.sin(i+j*2.3)*13,Math.cos(i*3+j)*7,.8+(j%2)*.6,0,Math.PI*2);ctx.fill();}ctx.restore();
- });
  ctx.restore();
  ctx.strokeStyle='#ddfcff65';ctx.lineWidth=2;ctx.stroke(body);
  const base=ctx.createLinearGradient(0,326,0,380);base.addColorStop(0,'#e2fbff05');base.addColorStop(.4,'#c9f5ff4d');base.addColorStop(.7,'#e9ffff24');base.addColorStop(1,'#eeffff9c');ctx.fillStyle=base;ctx.beginPath();ctx.ellipse(263,350,119,24,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#eaffff85';ctx.lineWidth=1.4;ctx.stroke();ctx.beginPath();ctx.ellipse(263,345,111,14,0,0,Math.PI);ctx.strokeStyle='#f2ffffaa';ctx.stroke();
  ctx.fillStyle='#071d2e44';ctx.beginPath();ctx.ellipse(263,101,146,30,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#eeffffb8';ctx.lineWidth=3.2;ctx.stroke();ctx.beginPath();ctx.ellipse(263,101,137,23,0,0,Math.PI*2);ctx.strokeStyle='#a9d5df88';ctx.lineWidth=1.2;ctx.stroke();ctx.beginPath();ctx.ellipse(263,95,137,24,0,Math.PI*1.03,Math.PI*1.84);ctx.strokeStyle='#fffef3';ctx.lineWidth=2.1;ctx.stroke();
  // Bright vertical highlights make the wall thickness visible against the sink.
  ctx.beginPath();ctx.moveTo(128,129);ctx.bezierCurveTo(131,180,140,268,148,307);ctx.strokeStyle='#f1ffff70';ctx.lineWidth=4;ctx.lineCap='round';ctx.stroke();ctx.beginPath();ctx.moveTo(394,127);ctx.lineTo(378,302);ctx.strokeStyle='#f1ffff35';ctx.lineWidth=2;ctx.stroke();
+ ctx.restore();
+}
+ // Warm ring marks and fingerprints disappear with the actual cleaning mask.
+function stainSprite(i){const canvas=document.createElement('canvas');canvas.width=canvas.height=60;const ctx=canvas.getContext('2d');
+ctx.save();ctx.translate(30,30);ctx.rotate(Math.sin(i*2.7)*.7);ctx.globalAlpha=.60;
+  if(i%7===0){ctx.strokeStyle='#c9ac7d88';ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(0,0,21,9,0,.3,5.4);ctx.stroke();ctx.strokeStyle='#a78a6333';ctx.lineWidth=3;ctx.stroke();}
+  else if(i%3===0){ctx.strokeStyle='#d6c3a960';ctx.lineWidth=1;for(let j=0;j<3;j++){ctx.beginPath();ctx.ellipse(j-2,0,6+j*2,4+j,0,.5,4.8);ctx.stroke();}}
+  else{const stain=ctx.createRadialGradient(0,0,1,0,0,16);stain.addColorStop(0,'#c2aa7d42');stain.addColorStop(1,'#b2926c00');ctx.fillStyle=stain;ctx.beginPath();ctx.ellipse(0,0,16,9,0,0,Math.PI*2);ctx.fill();}
+  ctx.fillStyle='#c0a57744';for(let j=0;j<3;j++){ctx.beginPath();ctx.arc(Math.sin(i+j*2.3)*13,Math.cos(i*3+j)*7,.8+(j%2)*.6,0,Math.PI*2);ctx.fill();}ctx.restore();
+ return canvas;
+}
+
+let glassLayer,stains;
+// Reuse geometry, gradients and stain sprites rather than rebuilding them each frame.
+export function drawWashScene(ctx,{dirt,sponge,progress=0,radius=48,time=0}){
+ if(!glassLayer){glassLayer=document.createElement('canvas');glassLayer.width=520;glassLayer.height=430;drawGlass(glassLayer.getContext('2d'));stains=Array.from({length:48},(_,i)=>stainSprite(i));}
+ ctx.clearRect(0,0,520,430);ctx.drawImage(glassLayer,0,0);ctx.save();
+ dirt.forEach((spot,i)=>{if(spot.left<=0)return;ctx.globalAlpha=spot.left;ctx.drawImage(stains[i%stains.length],spot.x-30,spot.y-30);});ctx.globalAlpha=1;
  for(let i=0;i<4;i++){ctx.beginPath();for(let x=75;x<450;x+=7){const y=393+i*4+Math.sin(x/27+time/500+i)*2;if(x===75)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=`rgba(132,215,224,${.14-i*.025})`;ctx.lineWidth=1;ctx.stroke();}
  if(sponge){
   ctx.save();ctx.translate(sponge.x,sponge.y);ctx.rotate(-.15);ctx.fillStyle='#b8ebee0a';ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#e7ffff33';ctx.setLineDash([3,6]);ctx.stroke();ctx.setLineDash([]);

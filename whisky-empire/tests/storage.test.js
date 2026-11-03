@@ -7,7 +7,7 @@ test('IndexedDB serializes concurrent purchases, reward claims, sales and wash p
  for(let i=0;i<6;i++)await transact(catalog,{type:'tick'},{workId:i,activeMs:2500,coverage:1,distance:1000});
  const bought=await Promise.allSettled([transact(catalog,{type:'buyCard',tier:0}),transact(catalog,{type:'buyCard',tier:0})]);
  assert.equal(bought.filter(r=>r.status==='fulfilled').length,1);
- let s=await transact(catalog);assert.equal(s.balance,500);assert.equal(s.starterPassUsed,true);assert.equal(s.pending.starterDiscount,500);
+ let s=await transact(catalog);assert.equal(s.balance,1050);assert.equal(s.starterPassUsed,true);assert.equal(s.pending.starterDiscount,500);
  await Promise.all([transact(catalog,{type:'reveal'}),transact(catalog,{type:'reveal'})]);
  s=await transact(catalog);assert.equal(s.items.length,1);
  const sold=await Promise.allSettled([transact(catalog,{type:'sell',uid:s.items[0].uid}),transact(catalog,{type:'sell',uid:s.items[0].uid})]);
@@ -25,5 +25,11 @@ test('IndexedDB serializes concurrent purchases, reward claims, sales and wash p
 test('concurrent upgrade purchases apply one level and one charge',async()=>{
  await transact(catalog,{type:'reset'});for(let i=0;i<3;i++)await transact(catalog,{type:'tick'},{workId:i,activeMs:2500,coverage:1,distance:1000});
  const bought=await Promise.allSettled([transact(catalog,{type:'upgrade',id:'sponge',expectedLevel:0}),transact(catalog,{type:'upgrade',id:'sponge',expectedLevel:0})]);
- assert.equal(bought.filter(r=>r.status==='fulfilled').length,1);const s=await transact(catalog);assert.equal(s.upgrades.sponge,1);assert.equal(s.balance,100);assert.equal(s.transactions.filter(t=>t.type==='upgrade').length,1);
+ assert.equal(bought.filter(r=>r.status==='fulfilled').length,1);const s=await transact(catalog);assert.equal(s.upgrades.sponge,1);assert.equal(s.balance,750);assert.equal(s.transactions.filter(t=>t.type==='upgrade').length,1);
+});
+
+test('simultaneous quest claims produce one payout and durable claim',async()=>{
+ await transact(catalog,{type:'reset'});for(let i=0;i<10;i++)await transact(catalog,{type:'tick'},{workId:i,activeMs:2000,coverage:1,distance:600});
+ const results=await Promise.allSettled([transact(catalog,{type:'claimQuest',id:'wash-10'}),transact(catalog,{type:'claimQuest',id:'wash-10'})]);
+ assert.equal(results.filter(x=>x.status==='fulfilled').length,1);const s=await transact(catalog);assert.equal(s.balance,3000);assert.equal(s.transactions.filter(t=>t.type==='quest').length,1);assert.ok(s.questClaims['wash-10']);
 });

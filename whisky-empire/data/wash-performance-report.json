@@ -1,0 +1,7 @@
+{
+  "frames": 200,
+  "previousMsPerFrame": 0.3180000000074506,
+  "cachedMsPerFrame": 0.10950000000186265,
+  "reductionPercent": 65.56603773607009,
+  "note": "Chromium in cloud; equivalent Canvas draw workload with raster flush, not a guarantee of FPS on every device"
+}

@@ -10,7 +10,8 @@
     "test:browser": "node tests/browser.mjs",
     "test:wash": "node tests/wash.mjs",
     "import:catalog": "node tools/import-catalog.js",
-    "test:pages": "node tests/pages.mjs"
+    "test:pages": "node tests/pages.mjs",
+    "test:quests": "node tests/quests.mjs"
   },
   "engines": {
     "node": ">=22"

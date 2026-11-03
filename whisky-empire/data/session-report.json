@@ -1,0 +1,18 @@
+{
+  "sessions": 10000,
+  "drawsPerSession": 20,
+  "market": "fixed catalog baseline",
+  "strategy": "Basic, immediate Quick Sell; auto-claim available one-time work, opening and trade quests; no upgrades or sales of the starter gift",
+  "previous": {
+    "price": 1600,
+    "wage": 100,
+    "averageWashes": 84.1618
+  },
+  "current": {
+    "price": 1350,
+    "wage": 150,
+    "averageWashes": 10.9143,
+    "averageQuestIncome": 1918.5
+  },
+  "washReductionPercent": 87.03176500502603
+}

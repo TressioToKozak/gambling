@@ -3,24 +3,24 @@
   "starterPassAmount": 500,
   "starterPassUses": 1,
   "base": {
-    "activeMs": 2500,
+    "activeMs": 2000,
     "coverage": 0.95,
     "distance": 600,
     "radius": 48,
-    "cleanMs": 180,
-    "reward": 100
+    "cleanMs": 150,
+    "reward": 150
   },
   "max": {
-    "activeMs": 1600,
+    "activeMs": 1250,
     "coverage": 0.95,
     "distance": 600,
     "radius": 80,
-    "cleanMs": 90,
-    "reward": 180
+    "cleanMs": 75,
+    "reward": 250
   },
-  "baseTheoreticalEuroPerMinute": 24,
-  "maxTheoreticalEuroPerMinute": 67.5,
-  "totalUpgradeCost": 346700,
+  "baseTheoreticalEuroPerMinute": 45,
+  "maxTheoreticalEuroPerMinute": 120,
+  "totalUpgradeCost": 309900,
   "discountChangesOdds": false,
   "purchasedLuckChangesOdds": true,
   "maxLuckWeightBoost": 0.24,

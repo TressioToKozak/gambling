@@ -7,14 +7,14 @@ test('reward is saved at purchase, claimed once, sold once',()=>{const start=ini
 test('auction locks item and settles exactly once across restarts',()=>{let s=command(initial(0),catalog,{type:'buy',id:'fixture-low'},0);const uid=s.items[0].uid;s=command(s,catalog,{type:'auction',uid,start:100,minutes:1},0);assert.throws(()=>command(s,catalog,{type:'sell',uid},0));s=command(JSON.parse(JSON.stringify(s)),catalog,{type:'tick'},120000);const n=s.transactions.length,b=s.balance;s=command(s,catalog,{type:'tick'},120000);assert.equal(s.transactions.length,n);assert.equal(s.balance,b);assert.notEqual(s.items[0].status,'auction');});
 test('clock rollback cannot roll market back; refresh is deterministic',()=>{const a=initial(0),b=initial(0);advance(a,catalog,300000);advance(b,catalog,150000);advance(b,catalog,300000);assert.deepEqual(a.prices,b.prices);const tick=a.tick;advance(a,catalog,1);assert.equal(a.tick,tick);});
 test('market stays bounded and buying then selling loses money',()=>{let s=initial(0);for(let i=0;i<30;i++)advance(s,catalog,i*300000);for(const b of catalog.filter(b=>!b.kind))assert.ok(s.prices[b.id].price>=b.base*.55&&s.prices[b.id].price<=b.base*1.2);s=initial(0);s=command(s,catalog,{type:'buy',id:'fixture-low'},0);s=command(s,catalog,{type:'sell',uid:s.items[0].uid},0);assert.ok(s.balance<1000);});
-test('incomplete washing earns nothing',()=>{const s=initial(0);assert.throws(()=>payWash(s,{workId:0,activeMs:2499,coverage:1,distance:4000}));assert.equal(s.balance,1000);payWash(s,{workId:0,activeMs:8000,coverage:1,distance:1500});assert.equal(s.balance,1100);});
-test('all available pools sum to 100%, have <= 80% baseline quick sell EV',()=>{for(const p of pools(catalog)){if(!p.pool.length)continue;assert.ok(Math.abs(p.pool.reduce((n,r)=>n+r.chance,0)-1)<1e-12);assert.ok(p.ev<=p.price*.8);}});
+test('incomplete washing earns nothing',()=>{const s=initial(0);assert.throws(()=>payWash(s,{workId:0,activeMs:1999,coverage:1,distance:4000}));assert.equal(s.balance,1000);payWash(s,{workId:0,activeMs:8000,coverage:1,distance:1500});assert.equal(s.balance,1150);});
+test('all available pools sum to 100%, have <= 90% baseline quick sell EV',()=>{for(const p of pools(catalog)){if(!p.pool.length)continue;assert.ok(Math.abs(p.pool.reduce((n,r)=>n+r.chance,0)-1)<1e-12);assert.ok(p.ev<=p.price*.9);}});
 
-test('wash proof cannot be replayed',()=>{const s=initial(0),proof={workId:0,activeMs:8000,coverage:1,distance:1500};payWash(s,proof);assert.throws(()=>payWash(s,proof));assert.equal(s.balance,1100);});
+test('wash proof cannot be replayed',()=>{const s=initial(0),proof={workId:0,activeMs:8000,coverage:1,distance:1500};payWash(s,proof);assert.throws(()=>payWash(s,proof));assert.equal(s.balance,1150);});
 
-test('no positive scratch EV even at the upper price bound',()=>{for(const p of pools(catalog))assert.ok(p.ev*1.2<p.price);});
+test('scratch quotes follow current market while remaining below 100% EV',()=>{const s=initial(0);s.starterPassUsed=true;for(const b of catalog)s.prices[b.id]={price:Math.round(b.base*1.2)};const base=pools(catalog);for(const p of pools(catalog,s)){const live=p.pool.reduce((n,r)=>n+Math.floor(s.prices[r.id].price*.85)*r.chance,0);assert.ok(live<p.price);assert.ok(p.price>=base.find(x=>x.id===p.id).price);}});
 
-test('first bottle quest is available once after a real wash and survives reload',()=>{let s=initial(0);assert.throws(()=>command(s,catalog,{type:'starter'},0));payWash(s,{workId:0,activeMs:2500,coverage:.95,distance:600});s=command(s,catalog,{type:'starter'},0);assert.equal(s.items[0].bottle,'jw-004');assert.equal(s.items[0].source,'starter');assert.equal(s.balance,1100);assert.throws(()=>command(JSON.parse(JSON.stringify(s)),catalog,{type:'starter'},0));});
+test('first bottle quest is available once after a real wash and survives reload',()=>{let s=initial(0);assert.throws(()=>command(s,catalog,{type:'starter'},0));payWash(s,{workId:0,activeMs:2500,coverage:.95,distance:600});s=command(s,catalog,{type:'starter'},0);assert.equal(s.items[0].bottle,'jw-004');assert.equal(s.items[0].source,'starter');assert.equal(s.balance,1150);assert.throws(()=>command(JSON.parse(JSON.stringify(s)),catalog,{type:'starter'},0));});
 
 test('themed packs include all matching Black Label and Label editions, with no fragments',()=>{
  const packs=pools(catalog);assert.deepEqual(packs.find(p=>p.id==='basic').pool.map(r=>r.id),['jw-004','jw-2e092d2b628a','jw-001']);
@@ -23,18 +23,18 @@ test('themed packs include all matching Black Label and Label editions, with no 
 });
 test('purchased loyalty lowers prices without changing odds or creating positive expected returns',()=>{
  const s=initial(0);s.upgrades={loyalty:3};s.starterPassUsed=true;const base=pools(catalog),discount=pools(catalog,s);
- for(let i=0;i<base.length;i++){assert.equal(discount[i].price,Math.ceil(base[i].basePrice*.92));assert.deepEqual(discount[i].pool,base[i].pool);assert.ok(base[i].ev*1.2<discount[i].price);}
+ for(let i=0;i<base.length;i++){assert.equal(discount[i].price,Math.ceil(base[i].basePrice*.92));assert.deepEqual(discount[i].pool,base[i].pool);assert.ok(base[i].ev<discount[i].price);}
 });
 test('upgrades debit once, reject stale level purchases and preserve old saves',()=>{
- let s=initial(0);delete s.upgrades;assert.equal(washRules(s).reward,100);assert.equal(washRules(s).radius,48);assert.throws(()=>command(s,catalog,{type:'upgrade',id:'sponge',expectedLevel:0},0));
- s.balance=10000;s=command(s,catalog,{type:'upgrade',id:'sponge',expectedLevel:0},0);assert.equal(s.balance,8800);assert.equal(s.upgrades.sponge,1);assert.equal(washRules(s).radius,58);
- assert.throws(()=>command(s,catalog,{type:'upgrade',id:'sponge',expectedLevel:0},0));assert.equal(s.balance,8800);
+ let s=initial(0);delete s.upgrades;assert.equal(washRules(s).reward,150);assert.equal(washRules(s).radius,48);s.balance=0;assert.throws(()=>command(s,catalog,{type:'upgrade',id:'sponge',expectedLevel:0},0));
+ s.balance=10000;s=command(s,catalog,{type:'upgrade',id:'sponge',expectedLevel:0},0);assert.equal(s.balance,9300);assert.equal(s.upgrades.sponge,1);assert.equal(washRules(s).radius,58);
+ assert.throws(()=>command(s,catalog,{type:'upgrade',id:'sponge',expectedLevel:0},0));assert.equal(s.balance,9300);
  s.upgrades.sponge=3;assert.throws(()=>command(s,catalog,{type:'upgrade',id:'sponge',expectedLevel:3},0));
 });
 test('maximum work upgrades give a finite earned payout and reject invalid proof',()=>{
- const s=initial(0);s.upgrades={speed:3,soap:3,sponge:3,tips:3};const r=washRules(s);assert.equal(r.activeMs,1600);assert.equal(r.reward,180);assert.equal(r.radius,80);assert.equal(r.cleanMs,90);
- assert.throws(()=>payWash(s,{workId:0,activeMs:NaN,coverage:1,distance:1000}));assert.throws(()=>payWash(s,{workId:0,activeMs:1599,coverage:1,distance:1000}));
- payWash(s,{workId:0,activeMs:1600,coverage:.95,distance:600});assert.equal(s.balance,1180);
+ const s=initial(0);s.upgrades={speed:3,soap:3,sponge:3,tips:3};const r=washRules(s);assert.equal(r.activeMs,1250);assert.equal(r.reward,250);assert.equal(r.radius,80);assert.equal(r.cleanMs,75);
+ assert.throws(()=>payWash(s,{workId:0,activeMs:NaN,coverage:1,distance:1000}));assert.throws(()=>payWash(s,{workId:0,activeMs:1249,coverage:1,distance:1000}));
+ payWash(s,{workId:0,activeMs:1250,coverage:.95,distance:600});assert.equal(s.balance,1250);
 });
 test('legacy pending fragment remains redeemable after pack replacement',()=>{
  const s=initial(0);s.pending={uid:5,bottle:voucher.id,cost:500,revealed:false};s.seq=5;
@@ -43,20 +43,20 @@ test('legacy pending fragment remains redeemable after pack replacement',()=>{
 
 test('six starter collections have distinct pools and one is affordable with the first pass',()=>{
  const packs=pools(catalog,initial(0)),starter=packs.filter(p=>p.starter);assert.equal(starter.length,6);assert.equal(packs.length,13);assert.equal(new Set(starter.map(p=>p.pool.map(r=>r.id).join(','))).size,6);
- const red=starter.find(p=>p.id==='red-club');assert.equal(red.regularPrice,1500);assert.equal(red.price,1000);assert.equal(red.starterDiscount,500);assert.ok(red.price<=initial(0).balance);
+ const red=starter.find(p=>p.id==='red-club');assert.equal(red.regularPrice,1275);assert.equal(red.price,775);assert.equal(red.starterDiscount,500);assert.ok(red.price<=initial(0).balance);
 });
 test('the starter pass is consumed once across packs and survives a restart',()=>{
- let s=initial(0);s.balance=10000;const normal=pools(catalog);s=command(s,catalog,{type:'buyCard',packId:'red-club'},0);assert.equal(s.pending.cost,1000);assert.equal(s.pending.starterDiscount,500);assert.equal(s.starterPassUsed,true);
+ let s=initial(0);s.balance=10000;const normal=pools(catalog);s=command(s,catalog,{type:'buyCard',packId:'red-club'},0);assert.equal(s.pending.cost,775);assert.equal(s.pending.starterDiscount,500);assert.equal(s.starterPassUsed,true);
  s=command(s,catalog,{type:'reveal'},0);s=command(s,catalog,{type:'keep'},0);s=JSON.parse(JSON.stringify(s));
  for(const p of pools(catalog,s)){assert.equal(p.starterDiscount,0);assert.equal(p.price,normal.find(n=>n.id===p.id).price);}
- s=command(s,catalog,{type:'buyCard',packId:'red-club'},0);assert.equal(s.pending.cost,1500);assert.equal(s.pending.starterDiscount,0);
+ s=command(s,catalog,{type:'buyCard',packId:'red-club'},0);assert.equal(s.pending.cost,1275);assert.equal(s.pending.starterDiscount,0);
  const poor=initial(0);poor.balance=100;assert.throws(()=>command(poor,catalog,{type:'buyCard',packId:'red-club'},0));assert.equal(poor.starterPassUsed,false);
 });
 
 test('every pack has a profitable baseline jackpot, including Red Rye and ultra-limited reserve',()=>{
  for(const p of pools(catalog)){assert.ok(p.pool.length>0,p.id);assert.ok(p.max*.85>p.price,p.id+' top reward must recover ticket cost');}
  assert.ok(pools(catalog).find(p=>p.id==='red-club').pool.some(r=>r.id==='jw-851ef6c0baad'));
- const royal=pools(catalog).find(p=>p.id==='imperial');assert.ok(royal.price>=1000000);assert.equal(royal.pool.length,6);
+ const royal=pools(catalog).find(p=>p.id==='imperial');assert.ok(royal.price>=850000);assert.equal(royal.pool.length,6);
 });
 test('luck shifts probability toward higher-value bottles without depending on balance or loss history',()=>{
  const base=initial(0),upgraded=initial(0);upgraded.upgrades={luck:3};const p=pools(catalog,base).find(p=>p.id==='red-club'),q=pools(catalog,upgraded).find(p=>p.id==='red-club');assert.ok(q.pool.find(r=>r.id==='jw-851ef6c0baad').chance>p.pool.find(r=>r.id==='jw-851ef6c0baad').chance);
@@ -64,7 +64,7 @@ test('luck shifts probability toward higher-value bottles without depending on b
 });
 test('all combinations of luck, quick sell and VIP stay below 100% repeat EV at market peak',()=>{
  for(let luck=0;luck<=3;luck++)for(let quicksell=0;quicksell<=3;quicksell++)for(let loyalty=0;loyalty<=3;loyalty++){
-  const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty};
+  const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty};for(const b of catalog)s.prices[b.id]={price:Math.round(b.base*1.2)};
   for(const p of pools(catalog,s)){const rate=[.85,.86,.87,.88][quicksell],peak=p.pool.reduce((n,r)=>n+Math.floor(Math.round(catalog.find(b=>b.id===r.id).base*1.2)*rate)*r.chance,0);assert.ok(peak<p.price,p.id+' max EV');assert.ok(Math.abs(p.pool.reduce((n,r)=>n+r.chance,0)-1)<1e-12);}
  }
 });
@@ -74,4 +74,43 @@ test('better quick sell applies exactly and purchased luck cannot reroll an exis
 });
 test('auction price advice rewards competitive prices while excessive asks can go unsold',()=>{
  assert.ok(auctionEstimate(1900,1800,1).chance>.8);assert.ok(auctionEstimate(1900,1800,5).chance>auctionEstimate(1900,1800,1).chance);assert.equal(auctionEstimate(1900,3000,15).chance,0);assert.ok(auctionEstimate(1900,1800).maxBid*.95<1900*1.03);
+});
+
+
+test('washing, scratch and trading quests require actual progress and pay once',()=>{
+ let s=initial(0);assert.throws(()=>command(s,catalog,{type:'claimQuest',id:'wash-10'},0));assert.throws(()=>command(s,catalog,{type:'claimQuest',id:'missing'},0));
+ for(let i=0;i<10;i++)payWash(s,{workId:i,activeMs:2000,coverage:1,distance:600});
+ const before=s.balance;s=command(s,catalog,{type:'claimQuest',id:'wash-10'},0);assert.equal(s.balance,before+500);assert.throws(()=>command(JSON.parse(JSON.stringify(s)),catalog,{type:'claimQuest',id:'wash-10'},0));
+ s=command(s,catalog,{type:'buyCard',packId:'red-club'},0);assert.throws(()=>command(s,catalog,{type:'claimQuest',id:'scratch-1'},0));
+ s=command(s,catalog,{type:'reveal'},0);s=command(s,catalog,{type:'claimQuest',id:'scratch-1'},0);assert.equal(s.questClaims['scratch-1'].reward,200);
+ assert.throws(()=>command(s,catalog,{type:'claimQuest',id:'trade-5'},0));s.items=Array.from({length:5},(_,i)=>({uid:100+i,bottle:'jw-004',status:'sold'}));
+ s=command(s,catalog,{type:'claimQuest',id:'trade-5'},0);assert.equal(s.questClaims['trade-5'].reward,500);
+});
+test('album quest counts distinct currently owned editions, includes auction locks and survives reload',()=>{
+ let s=initial(0);s.items=[{uid:1,bottle:'jw-004',status:'collection'},{uid:2,bottle:'jw-004',status:'collection'},{uid:3,bottle:'jw-001',status:'auction'},{uid:4,bottle:'jw-2e092d2b628a',status:'sold'}];
+ assert.throws(()=>command(s,catalog,{type:'claimQuest',id:'set-basic'},0));s.items[3].status='collection';s=command(s,catalog,{type:'claimQuest',id:'set-basic'},0);
+ assert.equal(s.balance,1500);assert.throws(()=>command(JSON.parse(JSON.stringify(s)),catalog,{type:'claimQuest',id:'set-basic'},0));assert.equal(s.transactions.filter(t=>t.type==='quest').length,1);
+});
+test('stale scratch price cannot charge more than the displayed quote',()=>{
+ const s=initial(0);s.balance=100000;s.starterPassUsed=true;const quoted=pools(catalog,s)[0].price;for(const b of catalog)s.prices[b.id]={price:Math.round(b.base*1.2)};
+ assert.throws(()=>command(s,catalog,{type:'buyCard',packId:'basic',maxPrice:quoted},0));assert.equal(s.balance,100000);assert.equal(s.pending,null);
+});
+test('mixed market prices keep every upgrade combination below the repeat payout bound',()=>{
+ for(let luck=0;luck<4;luck++)for(let quicksell=0;quicksell<4;quicksell++)for(let loyalty=0;loyalty<4;loyalty++){
+  const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty};catalog.forEach((b,i)=>s.prices[b.id]={price:Math.round(b.base*(i%2?.55:1.2))});
+  for(const p of pools(catalog,s)){const ev=p.pool.reduce((n,r)=>n+quickValue(s,catalog.find(b=>b.id===r.id))*r.chance,0);assert.ok(ev<p.price,p.id);}
+ }
+});
+
+test('starter packs have improved baseline returns and five middle rewards are within 10% of break even',()=>{
+ const starter=pools(catalog).filter(p=>p.starter);let nearEven=0;
+ for(const p of starter){assert.ok(p.ev/p.price>=.8,p.id+' baseline return');const prizes=p.pool.map(r=>catalog.find(b=>b.id===r.id)).sort((a,b)=>a.base-b.base),middle=Math.floor(prizes[Math.floor(prizes.length/2)].base*.85);if(Math.abs(middle/p.price-1)<=.1)nearEven++;}
+ assert.ok(nearEven>=5);
+});
+
+test('inverted live prices remain safe when luck tilts toward an edition in a price slump',()=>{
+ for(let luck=0;luck<4;luck++)for(let quicksell=0;quicksell<4;quicksell++){
+ const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty:3};const sorted=catalog.filter(b=>!b.kind).sort((a,b)=>a.base-b.base);sorted.forEach((b,i)=>s.prices[b.id]={price:Math.round(b.base*(i<sorted.length/2?1.2:.55))});s.prices['jw-001'].price=Math.round(1895*.55);
+ for(const p of pools(catalog,s))assert.ok(p.pool.reduce((sum,r)=>sum+quickValue(s,catalog.find(b=>b.id===r.id))*r.chance,0)<p.price,p.id);
+ }
 });

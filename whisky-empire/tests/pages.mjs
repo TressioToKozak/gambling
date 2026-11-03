@@ -20,7 +20,7 @@ try{
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400&&!r.url().endsWith('favicon.ico'))errors.push(`${r.status()} ${r.url()}`);});
   await page.goto(`http://127.0.0.1:${server.address().port}/gambling/`);
-  await page.getByRole('button',{name:'Zaczynamy'}).click();
+  await page.locator('dialog').getByRole('button',{name:'Zaczynamy'}).click();
   await page.locator('nav [data-tab="Marketplace"]').click();
   assert.equal(await page.locator('.product').count(),235);
   await page.locator('.product img').evaluateAll(images=>Promise.all(images.map(img=>{const copy=new Image();copy.src=img.src;return copy.decode();})));

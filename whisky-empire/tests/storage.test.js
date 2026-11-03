@@ -16,4 +16,7 @@ test('IndexedDB serializes concurrent purchases, reward claims, sales and wash p
  const wages=await Promise.allSettled([transact(catalog,{type:'tick'},proof),transact(catalog,{type:'tick'},proof)]);
  assert.equal(wages.filter(r=>r.status==='fulfilled').length,1);
  assert.equal((await transact(catalog)).washed,1);
+ const gifts=await Promise.allSettled([transact(catalog,{type:'starter'}),transact(catalog,{type:'starter'})]);
+ assert.equal(gifts.filter(r=>r.status==='fulfilled').length,1);
+ assert.equal((await transact(catalog)).items.filter(x=>x.source==='starter').length,1);
 });

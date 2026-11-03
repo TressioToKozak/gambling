@@ -46,7 +46,7 @@ npm run build
 
 ## Pętla gry
 
-Start: 10 €. Szorowanie 48 obszarów szkła wymaga ruchu, dystansu i minimum 8 sekund aktywnego kontaktu; jedna wypłata = 1 €. W praktyce tempo zależy od dokładności ruchów; test systematycznego szorowania kończy kieliszek po około 8–15 sekundach. Powtórne użycie dowodu wypłaty jest odrzucane.
+Start: 10 €. Szorowanie 48 obszarów szkła wymaga ruchu, dystansu i minimum 2,5 sekundy aktywnego kontaktu; jedna wypłata = 1 €. W praktyce tempo zależy od dokładności ruchów; test systematycznego szorowania kończy kieliszek po około 3 sekundach. Powtórne użycie dowodu wypłaty jest odrzucane.
 
 Karty mają stałe, jawne pule. Losowanie i obciążenie konta zapisują się atomowo przed animacją. Canvas usuwa warstwę pod kursorem; przy 70% odkrywa resztę. Nagroda trafia raz do kolekcji; Keep, Quick Sell i Auction zarządzają tym samym egzemplarzem.
 
@@ -70,7 +70,7 @@ Dostosowano ceny Silver–Diamond, ponieważ ceny katalogu są niższe od przyk�
 
 Dokładne pule: `game/engine.js`, widoczne również przed zakupem każdej karty. Budget: 90% fragment 2 € i 10% Red Label. Legendary: 67,5% The John Walker, 30% The Directors Blend 2008, 2% 40 Year Old Master's Ruby Reserve, 0,5% 48 Year Old Masters of Flavour.
 
-`data/economy-report.jsonl` zapisuje 70 000 losowań: po 10 000 każdej karty, stały seed do odtwarzalnych porównań. Zaobserwowane zwroty: 58,80 / 77,74 / 65,20 / 63,70 / 66,53 / 71,20 / 72,69%. Samo mycie daje 4–7,5 € na minutę przy 8–15 s/sztukę; karty mają ujemny oczekiwany wynik. Nie dopasowujemy szans do salda ani historii gracza.
+`data/economy-report.jsonl` zapisuje 70 000 losowań: po 10 000 każdej karty, stały seed do odtwarzalnych porównań. Zaobserwowane zwroty: 58,80 / 77,74 / 65,20 / 63,70 / 66,53 / 71,20 / 72,69%. Samo mycie daje około 20 € na minutę przy 3 s/sztukę; karty mają ujemny oczekiwany wynik. Nie dopasowujemy szans do salda ani historii gracza.
 
 ## Rynek i poprawność
 
@@ -99,3 +99,11 @@ Workflow `.github/workflows/pages.yml` testuje i buduje grę po pushu na `main`,
 Ścieżki modułów, katalogu i zdjęć są względne, więc gra działa pod prefiksem `/gambling/` i na domenie własnej. Plik `.nojekyll` zapobiega przetwarzaniu przez Jekyll. Test wdrożenia: `npm run build`, następnie `npm run test:pages` (systemowy Chromium). Ten test sprawdza załadowanie modułów, katalogu i wszystkich 235 zdjęć z podkatalogu.
 
 Zapis na GitHub Pages jest oddzielny od zapisu na serwerze lokalnym, ponieważ IndexedDB należy do originu przeglądarki.
+
+## Aktualizacja: arcade / szybki start
+
+Interfejs całkowicie przebudowano: górny HUD i menu, scena baru z fotografiami butelek, limonkowe i pastelowe karty, ilustracyjne kafle rozgrywki oraz podświetlana kolekcja. Usunięto boczny panel i dominujące statystyki. Szczegóły egzemplarzy schowano pod rozwijanymi historiami.
+
+Mycie: minimum 2,5 s aktywnego ruchu, 95% pokrycia i 600 px ruchu; większa gąbka i szybsze usuwanie plam. Test Chromium ukończył jeden kieliszek w 2,85 s i potwierdził wypłatę 1 €. Samo kliknięcie nadal nie daje wynagrodzenia.
+
+Misja startowa: po pierwszym umytym kieliszku można raz odebrać Red Label (`jw-004`) za darmo. Działa także z dotychczasowym zapisem, bez resetowania konta. To jawny jednorazowy prezent, oddzielny od losowań; pule i szanse zdrapek pozostają takie same. Odbiór nagrody i flaga jej wykorzystania zapisują się atomowo.

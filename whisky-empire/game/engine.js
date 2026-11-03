@@ -1,3 +1,4 @@
+export const WASH_RULES={activeMs:2500,coverage:.95,distance:600};
 // All currency is integer euro cents. This module has no browser dependencies.
 export const tiers = ['Common','Uncommon','Rare','Epic','Legendary','Mythic'];
 export function initial(now=Date.now()) { return {version:1,balance:1000,items:[],pending:null,auctions:[],transactions:[],washed:0,workId:0,seq:0,tick:0,epoch:now,last:now,prices:{},history:[],news:[],sound:false,tutorial:true,seed:271828}; }
@@ -27,6 +28,7 @@ export function advance(s,c,now) {
 }
 export function command(state,c,action,now=Date.now()) {
  const s=structuredClone(state); advance(s,c,now);
+ if(action.type==='starter'){if(s.starterClaimed||s.washed<1)throw Error('Umyj pierwszy kieliszek, aby odebrać prezent');if(!c.some(b=>b.id==='jw-004'))throw Error('Brak butelki startowej');s.starterClaimed=true;s.items.push({uid:++s.seq,bottle:'jw-004',cost:0,status:'collection',source:'starter',time:s.last});record(s,'starter',0,'Red Label — jednorazowa misja startowa');}
  if(action.type==='sound')s.sound=!s.sound;
  if(action.type==='tutorial')s.tutorial=false;
  if(action.type==='buyCard') { if(s.pending)throw Error('Najpierw odbierz obecną zdrapkę'); const card=pools(c)[action.tier];if(!card?.pool.length)throw Error('Brak zweryfikowanej puli nagród');if(s.balance<card.price)throw Error('Niewystarczające środki');record(s,'scratch',-card.price,card.name);let r=random(s),reward=card.pool.at(-1).id;for(const p of card.pool){r-=p.chance;if(r<0){reward=p.id;break;}}s.pending={uid:++s.seq,bottle:reward,cost:card.price,revealed:false}; }
@@ -38,5 +40,5 @@ export function command(state,c,action,now=Date.now()) {
  if(action.type!=='tick') {s.history.push({tick:s.tick,balance:s.balance,collection:s.items.filter(x=>x.status!=='sold').reduce((n,x)=>n+value(s,c.find(b=>b.id===x.bottle)),0)});s.history=s.history.slice(-6000);}
  return s;
 }
-export function payWash(s,proof){if(proof.workId!==s.workId)throw Error('To wynagrodzenie zostało już odebrane');if(proof.activeMs<8000||proof.coverage<.99||proof.distance<1500)throw Error('Dokończ mycie');record(s,'work',100,'Umyty kieliszek');s.washed++;s.workId++;}
+export function payWash(s,proof){if(proof.workId!==s.workId)throw Error('To wynagrodzenie zostało już odebrane');if(proof.activeMs<WASH_RULES.activeMs||proof.coverage<WASH_RULES.coverage||proof.distance<WASH_RULES.distance)throw Error('Dokończ mycie');record(s,'work',100,'Umyty kieliszek');s.washed++;s.workId++;}
 export function achievements(s,c){const own=s.items.filter(x=>x.status!=='sold');const total=s.balance+own.reduce((n,x)=>n+value(s,c.find(b=>b.id===x.bottle)),0);return [['First Bottle',s.items.length>0],['Hard Worker',s.washed>=100],['First Profit',s.items.some(x=>x.proceeds>x.cost)],['Collector',own.length>=25],['Whisky Investor',total>=100000],['Whisky Tycoon',total>=10000000]];}

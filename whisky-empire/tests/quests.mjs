@@ -16,7 +16,7 @@ try{
  // Measure equivalent 200-frame workloads; include raster flush in each timing.
  const oldSource=execFileSync('git',['show','0218040:whisky-empire/components/wash-canvas.js'],{encoding:'utf8'});
  const performanceReport=await page.evaluate(async oldSource=>{
-  const old=await import('data:text/javascript;base64,'+btoa(oldSource)),current=await import('/components/wash-canvas.js?v=quests-7');
+  const old=await import('data:text/javascript;base64,'+btoa(oldSource)),current=await import('/components/wash-canvas.js?v=fluid-8');
   const dirt=Array.from({length:48},(_,i)=>({x:145+i%8*31,y:145+Math.floor(i/8)*34,left:.7}));
   function sample(draw){const canvas=document.createElement('canvas');canvas.width=520;canvas.height=430;const ctx=canvas.getContext('2d');for(let i=0;i<5;i++)draw(ctx,{dirt,sponge:{x:200,y:200},time:i*16});const start=performance.now();for(let i=0;i<200;i++)draw(ctx,{dirt,sponge:{x:200+i%100,y:200},progress:.8,time:i*16});ctx.getImageData(0,0,1,1);return (performance.now()-start)/200;}
   const previousMsPerFrame=sample(old.drawWashScene),cachedMsPerFrame=sample(current.drawWashScene);return {frames:200,previousMsPerFrame,cachedMsPerFrame,reductionPercent:(1-cachedMsPerFrame/previousMsPerFrame)*100};

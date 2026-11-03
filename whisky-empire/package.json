@@ -11,7 +11,8 @@
     "test:wash": "node tests/wash.mjs",
     "import:catalog": "node tools/import-catalog.js",
     "test:pages": "node tests/pages.mjs",
-    "test:quests": "node tests/quests.mjs"
+    "test:quests": "node tests/quests.mjs",
+    "test:fluid": "node tests/fluid.mjs"
   },
   "engines": {
     "node": ">=22"

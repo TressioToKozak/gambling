@@ -1,4 +1,4 @@
-import {buildPacks} from './packs.js?v=quests-7';
+import {buildPacks} from './packs.js?v=fluid-8';
 // One-time milestones; all progress is derived from the durable game state.
 const cached=new WeakMap();
 export function questDefinitions(c){

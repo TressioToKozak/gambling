@@ -1,0 +1,9 @@
+{
+  "marketHistoryPoints": 282000,
+  "compactHistoryPerBottle": 24,
+  "washLongTasks": [],
+  "scratchLongTasks": [],
+  "scratchPixelReads": 0,
+  "preservedRewardImage": true,
+  "note": "Chromium cloud observation with a large saved market; long tasks are main-thread tasks over 50ms, device performance varies"
+}

@@ -28,16 +28,21 @@ ctx.save();ctx.translate(30,30);ctx.rotate(Math.sin(i*2.7)*.7);ctx.globalAlpha=.
  return canvas;
 }
 
+const sponges=new Map();
+function spongeSprite(radius){if(sponges.has(radius))return sponges.get(radius);const canvas=document.createElement('canvas');canvas.width=canvas.height=Math.ceil(radius*3);const ctx=canvas.getContext('2d');ctx.translate(canvas.width/2,canvas.height/2);
+  const width=radius*1.32,height=radius*.85;ctx.shadowColor='#051e3588';ctx.shadowBlur=10;ctx.shadowOffsetY=5;ctx.fillStyle='#437c5d';ctx.beginPath();ctx.roundRect(-width/2,-height/2+7,width,height,8);ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetY=0;const soap=ctx.createLinearGradient(0,-height/2,0,height/2);soap.addColorStop(0,'#ffe89e');soap.addColorStop(1,'#e6b74d');ctx.fillStyle=soap;ctx.beginPath();ctx.roundRect(-width/2,-height/2,width,height-5,8);ctx.fill();ctx.fillStyle='#b58a393b';for(let i=0;i<18;i++){ctx.beginPath();ctx.ellipse(Math.sin(i*7)*width*.38,Math.cos(i*3)*height*.3,1.6+(i%3),1+(i%2),.3,0,Math.PI*2);ctx.fill();}
+sponges.set(radius,canvas);return canvas;}
+
 let glassLayer,stains;
 // Reuse geometry, gradients and stain sprites rather than rebuilding them each frame.
 export function drawWashScene(ctx,{dirt,sponge,progress=0,radius=48,time=0}){
  if(!glassLayer){glassLayer=document.createElement('canvas');glassLayer.width=520;glassLayer.height=430;drawGlass(glassLayer.getContext('2d'));stains=Array.from({length:48},(_,i)=>stainSprite(i));}
- ctx.clearRect(0,0,520,430);ctx.drawImage(glassLayer,0,0);ctx.save();
+ spongeSprite(radius);ctx.clearRect(0,0,520,430);ctx.drawImage(glassLayer,0,0);ctx.save();
  dirt.forEach((spot,i)=>{if(spot.left<=0)return;ctx.globalAlpha=spot.left;ctx.drawImage(stains[i%stains.length],spot.x-30,spot.y-30);});ctx.globalAlpha=1;
  for(let i=0;i<4;i++){ctx.beginPath();for(let x=75;x<450;x+=7){const y=393+i*4+Math.sin(x/27+time/500+i)*2;if(x===75)ctx.moveTo(x,y);else ctx.lineTo(x,y);}ctx.strokeStyle=`rgba(132,215,224,${.14-i*.025})`;ctx.lineWidth=1;ctx.stroke();}
  if(sponge){
   ctx.save();ctx.translate(sponge.x,sponge.y);ctx.rotate(-.15);ctx.fillStyle='#b8ebee0a';ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#e7ffff33';ctx.setLineDash([3,6]);ctx.stroke();ctx.setLineDash([]);
-  const width=radius*1.32,height=radius*.85;ctx.shadowColor='#051e3588';ctx.shadowBlur=10;ctx.shadowOffsetY=5;ctx.fillStyle='#437c5d';ctx.beginPath();ctx.roundRect(-width/2,-height/2+7,width,height,8);ctx.fill();ctx.shadowBlur=0;ctx.shadowOffsetY=0;const soap=ctx.createLinearGradient(0,-height/2,0,height/2);soap.addColorStop(0,'#ffe89e');soap.addColorStop(1,'#e6b74d');ctx.fillStyle=soap;ctx.beginPath();ctx.roundRect(-width/2,-height/2,width,height-5,8);ctx.fill();ctx.fillStyle='#b58a393b';for(let i=0;i<18;i++){ctx.beginPath();ctx.ellipse(Math.sin(i*7)*width*.38,Math.cos(i*3)*height*.3,1.6+(i%3),1+(i%2),.3,0,Math.PI*2);ctx.fill();}
+  const sprite=spongeSprite(radius),width=radius*1.32,height=radius*.85;ctx.drawImage(sprite,-sprite.width/2,-sprite.height/2);
   for(let i=0;i<15;i++){const a=i*2.4+time/2600,x=Math.sin(a)*(width*.62),y=Math.cos(a*1.1)*height*.64,r=2+(i%6);ctx.fillStyle='#f0ffff55';ctx.strokeStyle='#e8ffffaa';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.stroke();}
   ctx.restore();
  }

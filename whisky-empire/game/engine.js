@@ -1,8 +1,8 @@
-import {quests} from './quests.js?v=quests-7';
-export {quests} from './quests.js?v=quests-7';
-import {buildPacks} from './packs.js?v=quests-7';
-import {washRules,upgradeOffer,upgradeLevel,upgradeValue} from './upgrades.js?v=quests-7';
-export {washRules,upgradeOffer,upgradeLevel,upgradeValue,UPGRADE_DEFS} from './upgrades.js?v=quests-7';
+import {quests} from './quests.js?v=fluid-8';
+export {quests} from './quests.js?v=fluid-8';
+import {buildPacks} from './packs.js?v=fluid-8';
+import {washRules,upgradeOffer,upgradeLevel,upgradeValue} from './upgrades.js?v=fluid-8';
+export {washRules,upgradeOffer,upgradeLevel,upgradeValue,UPGRADE_DEFS} from './upgrades.js?v=fluid-8';
 export const WASH_RULES={activeMs:2000,coverage:.95,distance:600};
 // All currency is integer euro cents. This module has no browser dependencies.
 export const tiers = ['Common','Uncommon','Rare','Epic','Legendary','Mythic'];
@@ -30,6 +30,7 @@ export function advance(s,c,now) {
  s.history.push({tick:s.tick,balance:s.balance,collection:s.items.filter(x=>x.status!=='sold').reduce((n,x)=>n+value(s,c.find(b=>b.id===x.bottle)),0)}); s.history=s.history.slice(-6000);
  } s.news=s.news.slice(0,10);
 }
+function revealPending(s){if(!s.pending)throw Error('Brak zdrapki');if(!s.pending.revealed){s.pending.revealed=true;s.items.push({...s.pending,status:'collection',source:'scratch',time:s.last});}}
 export function command(state,c,action,now=Date.now()) {
  const s=structuredClone(state); advance(s,c,now);
  if(action.type==='claimQuest'){const quest=quests(s,c).find(q=>q.id===action.id);if(!quest||!quest.ready)throw Error('Misja nie jest gotowa lub nagroda została odebrana');s.questClaims={...(s.questClaims??{}),[quest.id]:{time:s.last,reward:quest.reward}};record(s,'quest',quest.reward,quest.description+' — '+quest.title);}
@@ -38,7 +39,8 @@ export function command(state,c,action,now=Date.now()) {
  if(action.type==='sound')s.sound=!s.sound;
  if(action.type==='tutorial')s.tutorial=false;
  if(action.type==='buyCard') { if(s.pending)throw Error('Najpierw odbierz obecną zdrapkę'); const card=action.packId?pools(c,s).find(p=>p.id===action.packId):pools(c,s)[action.tier];if(!card?.pool.length)throw Error('Brak zweryfikowanej puli nagród');if(action.maxPrice!==undefined&&(!Number.isInteger(action.maxPrice)||card.price>action.maxPrice))throw Error('Notowania zmieniły cenę zestawu. Sprawdź nową ofertę.');if(s.balance<card.price)throw Error('Niewystarczające środki');record(s,'scratch',-card.price,card.name);if(card.starterDiscount)s.starterPassUsed=true;let r=random(s),reward=card.pool.at(-1).id;for(const p of card.pool){r-=p.chance;if(r<0){reward=p.id;break;}}s.pending={uid:++s.seq,bottle:reward,cost:card.price,packId:card.id,packName:card.name,starterDiscount:card.starterDiscount,luckLevel:upgradeLevel(s,'luck'),revealed:false}; }
- if(action.type==='reveal') {if(!s.pending)throw Error('Brak zdrapki');if(!s.pending.revealed){s.pending.revealed=true;s.items.push({...s.pending,status:'collection',source:'scratch',time:s.last});}}
+ if(action.type==='reveal')revealPending(s);
+ if(action.type==='stashScratch'){if(!s.pending||s.pending.uid!==action.uid)throw Error('Ta zdrapka została już odebrana');revealPending(s);s.pending=null;}
  if(action.type==='keep'){if(!s.pending?.revealed)throw Error('Zdrap kartę');s.pending=null;}
  if(action.type==='buy'){const b=c.find(b=>b.id===action.id);if(!b||b.kind==='voucher')throw Error('Nieznana butelka');const cost=Math.ceil(value(s,b)*1.03);if(s.balance<cost)throw Error('Niewystarczające środki');record(s,'purchase',-cost,b.name);s.items.push({uid:++s.seq,bottle:b.id,cost,status:'collection',source:'market',time:s.last});}
  if(action.type==='sell'){const x=item(s,action.uid),b=c.find(b=>b.id===x.bottle);x.status='sold';x.proceeds=quickValue(s,b);record(s,'quick sell',x.proceeds,b.name);if(s.pending?.uid===x.uid)s.pending=null;}

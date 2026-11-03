@@ -33,3 +33,9 @@ test('simultaneous quest claims produce one payout and durable claim',async()=>{
  const results=await Promise.allSettled([transact(catalog,{type:'claimQuest',id:'wash-10'}),transact(catalog,{type:'claimQuest',id:'wash-10'})]);
  assert.equal(results.filter(x=>x.status==='fulfilled').length,1);const s=await transact(catalog);assert.equal(s.balance,3000);assert.equal(s.transactions.filter(t=>t.type==='quest').length,1);assert.ok(s.questClaims['wash-10']);
 });
+
+test('closing and revealing the same ticket concurrently cannot duplicate its bottle',async()=>{
+ await transact(catalog,{type:'reset'});let s=await transact(catalog,{type:'buyCard',packId:'basic'});const uid=s.pending.uid;
+ await Promise.allSettled([transact(catalog,{type:'stashScratch',uid}),transact(catalog,{type:'reveal'}),transact(catalog,{type:'stashScratch',uid})]);
+ s=await transact(catalog);assert.equal(s.pending,null);assert.equal(s.items.length,1);assert.equal(s.items[0].uid,uid);assert.equal(s.transactions.filter(t=>t.type==='scratch').length,1);
+});

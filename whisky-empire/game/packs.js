@@ -1,4 +1,4 @@
-import {upgradeValue} from './upgrades.js?v=quests-7';
+import {upgradeValue} from './upgrades.js?v=fluid-8';
 const DEFINITIONS=[
  {id:'basic',starter:true,name:'Basic',subtitle:'Trzy klasyki. Twój pierwszy drop.',icon:'🥃',color:'#ffad62',price:1300,power:0,ids:['jw-004','jw-2e092d2b628a','jw-001'],chances:[.60,.32,.08],risk:'Spokojny start'},
  {id:'red-club',starter:true,name:'Red Club',subtitle:'Red Soul, Red Label i rzadki Red Rye.',icon:'♥',color:'#ff929c',price:1200,ids:['jw-2e092d2b628a','jw-004','jw-851ef6c0baad'],chances:[.90,.08,.02],risk:'Na rozgrzewkę'},
@@ -36,12 +36,10 @@ export function buildPacks(c,s){
   const available=d.ids?items.length===d.ids.length:items.length>0;
   const raw=!available?[]:d.chances?d.ids.map((id,i)=>({id,chance:d.chances[i]})):weightedPool(items,d.power),pool=tilt(raw,items,luck);
   const ev=pool.reduce((n,r)=>n+Math.floor(c.find(b=>b.id===r.id).base*rate)*r.chance,0);
-  const marketPrice=b=>s?.prices?.[b.id]?.price??b.base;
-  const maxPool=tilt(raw,items,.24),worstEV=Math.max(...[raw,maxPool].map(rows=>rows.reduce((n,r)=>n+Math.floor(marketPrice(c.find(b=>b.id===r.id))*.88)*r.chance,0)));
-  const marketEV=raw.reduce((n,r)=>n+Math.floor(marketPrice(c.find(b=>b.id===r.id))*.85)*r.chance,0);
+  // Stable catalog-based prices. Market movement changes the value of prizes, never ticket prices.
+  const maxPool=tilt(raw,items,.24),worstEV=Math.max(...[raw,maxPool].map(rows=>rows.reduce((n,r)=>n+Math.floor(c.find(b=>b.id===r.id).base*.88)*r.chance,0)));
   const normalEV=raw.reduce((n,r)=>n+Math.floor(c.find(b=>b.id===r.id).base*.85)*r.chance,0);
-  // Current market quotes cover every perk combination, without charging a hypothetical peak upfront.
-  const basePrice=Math.max(Math.ceil((d.price??normalEV/.86)*marketEV/Math.max(1,normalEV)/25)*25,Math.ceil(worstEV/.92/.985/25)*25),regularPrice=Math.ceil(basePrice*(1-discount)),starterDiscount=s&&!s.starterPassUsed&&d.starter?500:0,price=regularPrice-starterDiscount;
+  const basePrice=Math.max(Math.ceil((d.price??normalEV/.86)/25)*25,Math.ceil(worstEV/.92/.985/25)*25),regularPrice=Math.ceil(basePrice*(1-discount)),starterDiscount=s&&!s.starterPassUsed&&d.starter?500:0,price=regularPrice-starterDiscount;
   return {id:d.id,name:d.name,subtitle:d.subtitle,icon:d.icon,color:d.color,risk:d.risk,starter:!!d.starter,pool,ev,basePrice,regularPrice,starterDiscount,price,discount,luckLevel:upgradeValue(s,'luck'),quickRate:rate,min:items[0]?.base??0,max:items.at(-1)?.base??0,preview:[...new Set([items[0]?.id,items[Math.floor(items.length/2)]?.id,items.at(-1)?.id].filter(Boolean))]};
  });
 }

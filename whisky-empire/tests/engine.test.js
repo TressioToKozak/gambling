@@ -12,7 +12,9 @@ test('all available pools sum to 100%, have <= 90% baseline quick sell EV',()=>{
 
 test('wash proof cannot be replayed',()=>{const s=initial(0),proof={workId:0,activeMs:8000,coverage:1,distance:1500};payWash(s,proof);assert.throws(()=>payWash(s,proof));assert.equal(s.balance,1150);});
 
-test('scratch quotes follow current market while remaining below 100% EV',()=>{const s=initial(0);s.starterPassUsed=true;for(const b of catalog)s.prices[b.id]={price:Math.round(b.base*1.2)};const base=pools(catalog);for(const p of pools(catalog,s)){const live=p.pool.reduce((n,r)=>n+Math.floor(s.prices[r.id].price*.85)*r.chance,0);assert.ok(live<p.price);assert.ok(p.price>=base.find(x=>x.id===p.id).price);}});
+test('scratch prices stay at the initial catalog quote through rising and falling markets',()=>{
+ const s=initial(0);s.starterPassUsed=true;const baseline=pools(catalog,s);for(const multiplier of [.55,.9,1.2]){for(const b of catalog)s.prices[b.id]={price:Math.round(b.base*multiplier)};for(const p of pools(catalog,s)){const base=baseline.find(x=>x.id===p.id);assert.equal(p.price,base.price);assert.deepEqual(p.pool,base.pool);}}
+});
 
 test('first bottle quest is available once after a real wash and survives reload',()=>{let s=initial(0);assert.throws(()=>command(s,catalog,{type:'starter'},0));payWash(s,{workId:0,activeMs:2500,coverage:.95,distance:600});s=command(s,catalog,{type:'starter'},0);assert.equal(s.items[0].bottle,'jw-004');assert.equal(s.items[0].source,'starter');assert.equal(s.balance,1150);assert.throws(()=>command(JSON.parse(JSON.stringify(s)),catalog,{type:'starter'},0));});
 
@@ -62,12 +64,11 @@ test('luck shifts probability toward higher-value bottles without depending on b
  const base=initial(0),upgraded=initial(0);upgraded.upgrades={luck:3};const p=pools(catalog,base).find(p=>p.id==='red-club'),q=pools(catalog,upgraded).find(p=>p.id==='red-club');assert.ok(q.pool.find(r=>r.id==='jw-851ef6c0baad').chance>p.pool.find(r=>r.id==='jw-851ef6c0baad').chance);
  upgraded.balance=9999999;upgraded.transactions=[{type:'scratch',amount:-999999}];assert.deepEqual(pools(catalog,upgraded).find(p=>p.id==='red-club').pool,q.pool);
 });
-test('all combinations of luck, quick sell and VIP stay below 100% repeat EV at market peak',()=>{
- for(let luck=0;luck<=3;luck++)for(let quicksell=0;quicksell<=3;quicksell++)for(let loyalty=0;loyalty<=3;loyalty++){
-  const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty};for(const b of catalog)s.prices[b.id]={price:Math.round(b.base*1.2)};
-  for(const p of pools(catalog,s)){const rate=[.85,.86,.87,.88][quicksell],peak=p.pool.reduce((n,r)=>n+Math.floor(Math.round(catalog.find(b=>b.id===r.id).base*1.2)*rate)*r.chance,0);assert.ok(peak<p.price,p.id+' max EV');assert.ok(Math.abs(p.pool.reduce((n,r)=>n+r.chance,0)-1)<1e-12);}
- }
+test('all combinations of luck, quick sell and VIP have negative repeat EV at catalog baseline',()=>{
+ for(let luck=0;luck<4;luck++)for(let quicksell=0;quicksell<4;quicksell++)for(let loyalty=0;loyalty<4;loyalty++){
+ const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty};for(const p of pools(catalog,s)){assert.ok(p.ev<p.price,p.id);assert.ok(Math.abs(p.pool.reduce((n,r)=>n+r.chance,0)-1)<1e-12);}}
 });
+
 test('better quick sell applies exactly and purchased luck cannot reroll an existing scratch',()=>{
  let s=initial(0);s.balance=100000;s=command(s,catalog,{type:'buyCard',packId:'basic'},0);const reward=s.pending.bottle;s=command(s,catalog,{type:'upgrade',id:'luck',expectedLevel:0},0);assert.equal(s.pending.bottle,reward);
  s.upgrades.quicksell=3;assert.equal(quickValue(s,catalog.find(b=>b.id==='jw-001')),Math.floor(1895*.88));assert.ok(quickValue(s,catalog.find(b=>b.id==='jw-001'))<Math.ceil(1895*1.03));
@@ -91,15 +92,15 @@ test('album quest counts distinct currently owned editions, includes auction loc
  assert.throws(()=>command(s,catalog,{type:'claimQuest',id:'set-basic'},0));s.items[3].status='collection';s=command(s,catalog,{type:'claimQuest',id:'set-basic'},0);
  assert.equal(s.balance,1500);assert.throws(()=>command(JSON.parse(JSON.stringify(s)),catalog,{type:'claimQuest',id:'set-basic'},0));assert.equal(s.transactions.filter(t=>t.type==='quest').length,1);
 });
-test('stale scratch price cannot charge more than the displayed quote',()=>{
+test('a displayed fixed scratch quote remains valid after market prices move',()=>{
  const s=initial(0);s.balance=100000;s.starterPassUsed=true;const quoted=pools(catalog,s)[0].price;for(const b of catalog)s.prices[b.id]={price:Math.round(b.base*1.2)};
- assert.throws(()=>command(s,catalog,{type:'buyCard',packId:'basic',maxPrice:quoted},0));assert.equal(s.balance,100000);assert.equal(s.pending,null);
+ const next=command(s,catalog,{type:'buyCard',packId:'basic',maxPrice:quoted},0);assert.equal(next.pending.cost,quoted);assert.equal(next.balance,100000-quoted);assert.throws(()=>command(s,catalog,{type:'buyCard',packId:'basic',maxPrice:quoted-1},0));
 });
-test('mixed market prices keep every upgrade combination below the repeat payout bound',()=>{
+
+test('market changes cannot modify any fixed pack quote or chance at any upgrade level',()=>{
  for(let luck=0;luck<4;luck++)for(let quicksell=0;quicksell<4;quicksell++)for(let loyalty=0;loyalty<4;loyalty++){
-  const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty};catalog.forEach((b,i)=>s.prices[b.id]={price:Math.round(b.base*(i%2?.55:1.2))});
-  for(const p of pools(catalog,s)){const ev=p.pool.reduce((n,r)=>n+quickValue(s,catalog.find(b=>b.id===r.id))*r.chance,0);assert.ok(ev<p.price,p.id);}
- }
+ const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty};const baseline=pools(catalog,s);catalog.forEach((b,i)=>s.prices[b.id]={price:Math.round(b.base*(i%2?.55:1.2))});
+ for(const p of pools(catalog,s)){const old=baseline.find(x=>x.id===p.id);assert.equal(p.price,old.price);assert.deepEqual(p.pool,old.pool);}}
 });
 
 test('starter packs have improved baseline returns and five middle rewards are within 10% of break even',()=>{
@@ -108,9 +109,12 @@ test('starter packs have improved baseline returns and five middle rewards are w
  assert.ok(nearEven>=5);
 });
 
-test('inverted live prices remain safe when luck tilts toward an edition in a price slump',()=>{
- for(let luck=0;luck<4;luck++)for(let quicksell=0;quicksell<4;quicksell++){
- const s=initial(0);s.starterPassUsed=true;s.upgrades={luck,quicksell,loyalty:3};const sorted=catalog.filter(b=>!b.kind).sort((a,b)=>a.base-b.base);sorted.forEach((b,i)=>s.prices[b.id]={price:Math.round(b.base*(i<sorted.length/2?1.2:.55))});s.prices['jw-001'].price=Math.round(1895*.55);
- for(const p of pools(catalog,s))assert.ok(p.pool.reduce((sum,r)=>sum+quickValue(s,catalog.find(b=>b.id===r.id))*r.chance,0)<p.price,p.id);
+test('closing an unexposed, partially scratched or revealed ticket stores exactly one owned bottle',()=>{
+ for(const revealed of [false,true]){let s=initial(0);s.balance=10000;s=command(s,catalog,{type:'buyCard',packId:'basic'},0);const pending=structuredClone(s.pending);if(revealed)s=command(s,catalog,{type:'reveal'},0);
+ s=command(s,catalog,{type:'stashScratch',uid:pending.uid},0);assert.equal(s.pending,null);assert.equal(s.items.length,1);assert.equal(s.items[0].bottle,pending.bottle);assert.equal(s.items[0].uid,pending.uid);assert.equal(s.items[0].cost,pending.cost);assert.equal(s.items[0].status,'collection');
+ assert.throws(()=>command(JSON.parse(JSON.stringify(s)),catalog,{type:'stashScratch',uid:pending.uid},0));assert.equal(s.items.length,1);
  }
+});
+test('a stale close cannot consume a different ticket and no ticket is stashed for free',()=>{
+ let s=initial(0);assert.throws(()=>command(s,catalog,{type:'stashScratch',uid:1},0));s.balance=10000;s=command(s,catalog,{type:'buyCard',packId:'basic'},0);assert.throws(()=>command(s,catalog,{type:'stashScratch',uid:s.pending.uid+1},0));assert.equal(s.items.length,0);
 });

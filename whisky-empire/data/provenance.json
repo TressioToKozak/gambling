@@ -1,0 +1,99 @@
+{
+  "repository": "https://github.com/TressioToKozak/whisky",
+  "commit": "5c99c4eaed7c48047b58c29e4f442fd08552ccc3",
+  "imported": "2026-11-03T17:52:15.970Z",
+  "count": 235,
+  "excluded": [
+    {
+      "id": "jw-cfa84236a438",
+      "name": "30 Year Old · Eight Treasures",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-58b260e125f8",
+      "name": "Black Label 12 Year Old · Air Ink Mexico City Edition",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-e1285edb7c05",
+      "name": "Black Label 12 Year Old · Air Ink San José Edition",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-221fdd1b660b",
+      "name": "Black Label 12 Year Old · Air Ink New Delhi Edition",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-77ef31a78842",
+      "name": "Black Label 12 Year Old · Air Ink Bangkok Edition",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-245bbc0beb34",
+      "name": "XR 19 Year Old",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-f29545856b67",
+      "name": "XR 23 Year Old",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-c475507a8719",
+      "name": "Premier",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-854643fbf2c1",
+      "name": "Blue Label · Cities Of The Future Hainan 2220",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-fc1e75f76a49",
+      "name": "Red Label · 1970s",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-5cfdf92717ae",
+      "name": "Blue Label · Year of the Pig 2019 (Taiwan Edition)",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-bd2e064343bd",
+      "name": "Blue Label · South Africa Limited Edition Design",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-646b1be0353c",
+      "name": "Blue Label · Great Inventions",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-93d2e18af694",
+      "name": "Blue Label · New York Limited Edition Design",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-12afe20d7c31",
+      "name": "Black Label Extra Special · 1970s",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-b6674b6c0e1b",
+      "name": "Quest",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-72d5dfbab647",
+      "name": "Blue Label · Year of the Pig 2019",
+      "reason": "No usable EUR price"
+    },
+    {
+      "id": "jw-ed-827e6170c814",
+      "name": "Red Label Special Old Highland Whisky Circa 1930’s",
+      "reason": "No usable EUR price"
+    }
+  ],
+  "rights": "Source and image attribution retained. No redistribution license assumed. Images remain property of their owners."
+}

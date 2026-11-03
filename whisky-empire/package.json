@@ -1,0 +1,22 @@
+{
+  "name": "whisky-empire",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/server.js",
+    "build": "node tools/build.js",
+    "test": "node --test --test-isolation=none tests/*.test.js",
+    "simulate": "node tools/simulate.js",
+    "test:browser": "node tests/browser.mjs",
+    "test:wash": "node tests/wash.mjs",
+    "import:catalog": "node tools/import-catalog.js",
+    "test:pages": "node tests/pages.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "6.2.5",
+    "playwright": "1.61.1"
+  }
+}

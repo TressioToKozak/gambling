@@ -1,0 +1,7 @@
+{"card":"Budget","runs":10000,"counts":{"game-fragment":9021,"jw-004":979},"expected":296.025,"observed":293.984,"returnPercent":58.79679999999999}
+{"card":"Classic","runs":10000,"counts":{"jw-2e092d2b628a":2415,"jw-004":6925,"jw-001":660},"expected":1163.82,"observed":1166.033,"returnPercent":77.73553333333332}
+{"card":"Silver","runs":10000,"counts":{"jw-004":3471,"jw-005":2513,"jw-001":3563,"jw-006":453},"expected":1635.8249999999998,"observed":1629.9165,"returnPercent":65.19666000000001}
+{"card":"Gold","runs":10000,"counts":{"jw-003":2449,"jw-001":3522,"jw-005":2524,"jw-006":1505},"expected":2234.4375,"observed":2229.6598,"returnPercent":63.70456571428571}
+{"card":"Platinum","runs":10000,"counts":{"jw-007":2529,"jw-006":3962,"jw-003":3029,"jw-002":480},"expected":4002.2250000000004,"observed":3991.76,"returnPercent":66.52933333333334}
+{"card":"Diamond","runs":10000,"counts":{"jw-002":6420,"jw-010":2529,"jw-b796e19b1d48":950,"jw-d06af9adc2c2":101},"expected":17593.8355,"observed":17800.6835,"returnPercent":71.202734}
+{"card":"Legendary","runs":10000,"counts":{"jw-d06af9adc2c2":6796,"jw-ed-79e6703b3050":2949,"jw-bbb3e123ff54":204,"jw-3168521d58c6":51},"expected":181519.948,"observed":181729.4939,"returnPercent":72.69179756}
